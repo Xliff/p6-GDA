@@ -17,10 +17,95 @@ class GDA::Column {
 
   has GdaColumn $!gc is implementor;
 
-  method new {
+  submethod BUILD ( :$gda-column ) {
+    self.setGdaColumn( $gda-column ) if $gda-Column
+  }
+
+  method setGdaColumn (GdaColumnAncestry $_) {
+    my $to-parent;
+
+    $!gc = do {
+      when GdaColumn {
+        $to-parent = cast(GObject, $_);
+        $_;
+      }
+
+      default {
+        $to-parent = $_;
+        cast(GdaColumn, $_);
+      }
+    }
+    self!setObject($to-parent)
+  }
+
+  method GDA::Raw::Definitions::GdaColumn
+  { $!gc }
+
+  multi method new (GdaColumnAncestry $gda-column, :$ref = True) {
+    return Nil unless $gda-column;
+
+    my $o = self.bless( :$gda-column );
+    $o.ref if $ref;
+    $o
+  }
+  multi method new {
     my $gda-column = gda_column_new();
 
     $gda-column ?? self.bless( :$gda-column ) !! Nil;
+  }
+
+  method allow_null is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_allow_null    },
+      STORE => -> $, \v { self.set_allow_null(v) }
+  }
+
+  method attribute is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_attribute    },
+      STORE => -> $, \v { self.set_attribute(v) }
+  }
+
+  method auto_increment is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_auto_increment    },
+      STORE => -> $, \v { self.set_auto_increment(v) }
+  }
+
+  method dbms_type is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_dbms_type    },
+      STORE => -> $, \v { self.set_dbms_type(v) }
+  }
+
+  method default_value is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_default_value    },
+      STORE => -> $, \v { self.set_default_value(v) }
+  }
+
+  method description is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_description    },
+      STORE => -> $, \v { self.set_description(v) }
+  }
+
+  method g_type is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_g_type    },
+      STORE => -> $, \v { self.set_g_type(v) }
+  }
+
+  method name is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_name    },
+      STORE => -> $, \v { self.set_name(v) }
+  }
+
+  method position is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_position    },
+      STORE => -> $, \v { self.set_position(v) }
   }
 
   # Is originally:
