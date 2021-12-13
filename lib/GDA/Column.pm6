@@ -54,6 +54,23 @@ class GDA::Column {
     $gda-column ?? self.bless( :$gda-column ) !! Nil;
   }
 
+  # Type: gchar
+  method id is rw  {
+    my $gv = GLib::Value.new( G_TYPE_STRING );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('id', $gv)
+        );
+        $gv.string;
+      },
+      STORE => -> $, Str() $val is copy {
+        $gv.string = $val;
+        self.prop_set('id', $gv);
+      }
+    );
+  }
+
   method allow_null is rw {
     Proxy.new:
       FETCH => -> $     { self.get_allow_null    },
