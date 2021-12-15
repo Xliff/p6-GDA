@@ -2,6 +2,6 @@ prefix=GDA
 modules=GDA::Raw::Types
 lib=gda
 call_prefix=gda_
-include-directory=/usr/local/include/libgda-5.0
+include-directory=/usr/include/libgda-5.0
 backups=backup,bitbucket,google-backup,azure-backup,hut
 build_exclude=
