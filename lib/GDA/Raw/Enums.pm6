@@ -116,6 +116,18 @@ our enum GdaDataComparatorErrorEnum is export <
   GDA_DATA_COMPARATOR_USER_CANCELLED_ERROR
 >;
 
+constant GdaDataModelAccessFlags is export := guint32;
+our enum GdaDataModelAccessFlagsEnum is export (
+  GDA_DATA_MODEL_ACCESS_RANDOM          => 1,
+  GDA_DATA_MODEL_ACCESS_CURSOR_FORWARD  => 1 +< 1,
+  GDA_DATA_MODEL_ACCESS_CURSOR_BACKWARD => 1 +< 2,
+  GDA_DATA_MODEL_ACCESS_CURSOR          => (1 +< 1) +| (1 +< 2),            #= GDA_DATA_MODEL_ACCESS_CURSOR_FORWARD | GDA_DATA_MODEL_ACCESS_CURSOR_BACKWARD,
+  GDA_DATA_MODEL_ACCESS_INSERT          => 1 +< 3,
+  GDA_DATA_MODEL_ACCESS_UPDATE          => 1 +< 4,
+  GDA_DATA_MODEL_ACCESS_DELETE          => 1 +< 5,
+  GDA_DATA_MODEL_ACCESS_WRITE           => (1 +< 3) +| (1 +< 4) +| (1 +< 5), #= GDA_DATA_MODEL_ACCESS_INSERT | GDA_DATA_MODEL_ACCESS_UPDATE | GDA_DATA_MODEL_ACCESS_DELET
+);
+
 constant GdaDataModelError is export := guint32;
 our enum GdaDataModelErrorEnum is export <
   GDA_DATA_MODEL_ROW_OUT_OF_RANGE_ERROR
@@ -358,6 +370,23 @@ our enum GdaSetErrorEnum is export <
   GDA_SET_IMPLEMENTATION_ERROR
 >;
 
+constant GdaSqlStatementType is export := guint32;
+our enum GdaSqlStatementTypeEnum is export <
+  GDA_SQL_STATEMENT_SELECT
+  GDA_SQL_STATEMENT_INSERT
+  GDA_SQL_STATEMENT_UPDATE
+  GDA_SQL_STATEMENT_DELETE
+  GDA_SQL_STATEMENT_COMPOUND
+  GDA_SQL_STATEMENT_BEGIN
+  GDA_SQL_STATEMENT_ROLLBACK
+  GDA_SQL_STATEMENT_COMMIT
+  GDA_SQL_STATEMENT_SAVEPOINT
+  GDA_SQL_STATEMENT_ROLLBACK_SAVEPOINT
+  GDA_SQL_STATEMENT_DELETE_SAVEPOINT
+  GDA_SQL_STATEMENT_UNKNOWN
+  GDA_SQL_STATEMENT_NONE
+>;
+
 constant GdaSqlAnyPartType is export := guint32;
 our enum GdaSqlAnyPartTypeEnum is export (
   GDA_SQL_ANY_STMT_SELECT             =>             GDA_SQL_STATEMENT_SELECT,
@@ -485,23 +514,6 @@ our enum GdaSqlStatementCompoundTypeEnum is export <
   GDA_SQL_STATEMENT_COMPOUND_EXCEPT_ALL
 >;
 
-constant GdaSqlStatementType is export := guint32;
-our enum GdaSqlStatementTypeEnum is export <
-  GDA_SQL_STATEMENT_SELECT
-  GDA_SQL_STATEMENT_INSERT
-  GDA_SQL_STATEMENT_UPDATE
-  GDA_SQL_STATEMENT_DELETE
-  GDA_SQL_STATEMENT_COMPOUND
-  GDA_SQL_STATEMENT_BEGIN
-  GDA_SQL_STATEMENT_ROLLBACK
-  GDA_SQL_STATEMENT_COMMIT
-  GDA_SQL_STATEMENT_SAVEPOINT
-  GDA_SQL_STATEMENT_ROLLBACK_SAVEPOINT
-  GDA_SQL_STATEMENT_DELETE_SAVEPOINT
-  GDA_SQL_STATEMENT_UNKNOWN
-  GDA_SQL_STATEMENT_NONE
->;
-
 constant GdaStatementError is export := guint32;
 our enum GdaStatementErrorEnum is export <
   GDA_STATEMENT_PARSE_ERROR
@@ -512,6 +524,16 @@ our enum GdaStatementErrorEnum is export <
   GDA_STATEMENT_PARAM_TYPE_ERROR
   GDA_STATEMENT_PARAM_ERROR
 >;
+
+constant GdaStatementModelUsage is export := guint32;
+our enum GdaStatementModelUsageEnum is export (
+  GDA_STATEMENT_MODEL_RANDOM_ACCESS   => 1,
+  GDA_STATEMENT_MODEL_CURSOR_FORWARD  => 1 +< 1,
+  GDA_STATEMENT_MODEL_CURSOR_BACKWARD => 1 +< 2,
+  GDA_STATEMENT_MODEL_CURSOR          => (1 +< 1) +| (1 +< 2), #= GDA_STATEMENT_MODEL_CURSOR_FORWARD | GDA_STATEMENT_MODEL_CURSOR_BACKWARD
+  GDA_STATEMENT_MODEL_ALLOW_NOPARAM   => 1 +< 3,
+  GDA_STATEMENT_MODEL_OFFLINE         => 1 +< 4
+);
 
 constant GdaStatementSqlFlag is export := guint32;
 our enum GdaStatementSqlFlagEnum is export (
