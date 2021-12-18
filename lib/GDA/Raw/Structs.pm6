@@ -1,10 +1,13 @@
 use v6.c;
 
+use Method::Also;
+
 use NativeCall;
 
 use GLib::Raw::Definitions;
 use GLib::Raw::Object;
 use GLib::Raw::Structs;
+use GLib::Raw::Subs;
 use GDA::Raw::Definitions;
 use GDA::Raw::Enums;
 
@@ -15,9 +18,147 @@ class GdaBatch is repr<CStruct> is export {
 	has gpointer  $!priv  ;
 }
 
+class GdaBinary is repr<CStruct> is export {
+	has CArray[uint8] $!data;
+	has glong         $.binary_length is rw;
+
+  submethod DESTROY { self!free }
+
+  method data is rw {
+    Proxy.new:
+      FETCH => -> $                   { $!data      },
+      STORE => -> $, CArray[uint8] \v { $!data := v }
+  }
+
+  method copy {
+    propReturnObject(
+      gda_binary_copy(self),
+      True,
+      GdaBinary
+    );
+  }
+
+
+  method !free {
+    gda_binary_free(self);
+  }
+
+  method get_type is also<get-type> {
+    state ($n, $t);
+
+    unstable_get_type( self.^name, &gda_binary_get_type, $n, $t );
+  }
+
+  method to_string (Int() $maxlen)
+    is also<
+      to-string
+      Str
+    >
+  {
+    my guint $m = $maxlen;
+
+    gda_binary_to_string(self, $m);
+  }
+
+  ### /usr/include/libgda-5.0/libgda/gda-value.h
+
+  sub gda_binary_copy (GdaBinary $boxed)
+    returns Pointer
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_binary_free (GdaBinary $boxed)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_binary_get_type ()
+    returns GType
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_binary_to_string (GdaBinary $bin, guint $maxlen)
+    returns Str
+    is native(gda)
+    is export
+  { * }
+
+}
+
 class GdaBlobOp is repr<CStruct> is export {
 	has GObject  $!object        ;
 	has gpointer $!_gda_reserved1;
+}
+
+class GdaBlob is repr<CStruct>is export {
+	HAS GdaBinary $.data;
+	has GdaBlobOp $!op;
+
+  method op is rw {
+    Proxy.new:
+      FETCH => -> $                 { $!op      },
+      STORE => -> $, GdaBlobOp() \v { $!op := v }
+  }
+
+  method copy {
+    propReturnObject(
+      gda_blob_copy(self),
+      True,
+      GdaBlob
+    );
+  }
+
+  method !free {
+    gda_blob_free(self);
+  }
+
+  method get_type {
+    state ($n, $t);
+
+    unstable_get_type( self.^name, &gda_blob_get_type, $n, $t );
+  }
+
+  method set_op (GdaBlobOp() $op) {
+    gda_blob_set_op(self, $op);
+  }
+
+  method to_string (Int() $maxlen) {
+    my guint $m = $maxlen;
+
+    gda_blob_to_string(self, $m);
+  }
+
+  ### /usr/include/libgda-5.0/libgda/gda-value.h
+
+  sub gda_blob_copy (GdaBlob $boxed)
+    returns Pointer
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_blob_free (GdaBlob $boxed)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_blob_get_type ()
+    returns GType
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_blob_set_op (GdaBlob $blob, GdaBlobOp $op)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_blob_to_string (GdaBlob $blob, guint $maxlen)
+    returns Str
+    is native(gda)
+    is export
+  { * }
 }
 
 class GdaColumn is repr<CStruct> is export {
@@ -124,6 +265,47 @@ class GdaDsnInfo is repr<CStruct> is export {
 	has gpointer $!_gda_reserved2;
 	has gpointer $!_gda_reserved3;
 	has gpointer $!_gda_reserved4;
+}
+
+class GdaGeometricPoint is repr<CStruct> is export {
+	has gdouble $.x is rw;
+	has gdouble $.y is rw;
+
+  method copy {
+    propReturnObject(
+      gda_geometricpoint_copy(self),
+      True,
+      GdaGeometricPoint
+    );
+  }
+
+  method free {
+    gda_geometricpoint_free(self);
+  }
+
+  method get_type {
+    state ($n, $t);
+
+    unstable_get_type( self.^name, &gda_geometricpoint_get_type, $n, $t );
+  }
+
+  sub gda_geometricpoint_copy (GdaGeometricPoint $boxed)
+    returns Pointer
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_geometricpoint_free (GdaGeometricPoint $boxed)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_geometricpoint_get_type ()
+    returns GType
+    is native(gda)
+    is export
+  { * }
+
 }
 
 class GdaHandlerBin is repr<CStruct> is export {
@@ -255,7 +437,7 @@ class GdaSetSource is repr<CStruct> is export {
   has gpointer       $!gda_reserved3;
   has gpointer       $!gda_reserved4;
 
-  method data_model is rw {
+  method data_model is rw is also<data-model> {
     Proxy.new:
       FETCH => -> $                    { $!data_model      },
       STORE => -> $, GdaDataModel() \v { $!data_model := v };
@@ -281,7 +463,7 @@ class GdaSetGroup is repr<CStruct> is export {
       STORE => -> $, GSList() \v { $!nodes := v };
   }
 
-  method nodes_source is rw {
+  method nodes_source is rw is also<nodes-source> {
     Proxy.new:
       FETCH => -> $                    { $!nodes_source      },
       STORE => -> $, GdaSetSource() \v { $!nodes_source := v };
@@ -302,7 +484,7 @@ class GdaSetNode is repr<CStruct> is export {
       STORE => -> $, GdaHolder() \v { $!holder := v };
   }
 
-  method source_model is rw {
+  method source_model is rw is also<source-model> {
     Proxy.new:
       FETCH => -> $                    { $!source_model      },
       STORE => -> $, GdaDataModel() \v { $!source_model := v };
@@ -381,19 +563,19 @@ class GdaMetaContext is repr<CStruct> is export {
   has CArray[Pointer[GValue]] $!column_values;
   has GHashTable              $!columns;
 
-  method table_name is rw {
+  method table_name is rw is also<table-name> {
     Proxy.new:
       FETCH => -> $           { $!table_name      },
       STORE => -> $, Str() \v { $!table_name := v };
   }
 
-  method column_name is rw {
+  method column_name is rw is also<column-name> {
     Proxy.new:
       FETCH => -> $                 { $!column_names      },
       STORE => -> $, CArray[Str] \v { $!column_names := v };
   }
 
-  method column_values is rw {
+  method column_values is rw is also<column-values> {
     Proxy.new:
       FETCH => -> $                             { $!column_values      },
       STORE => -> $, CArray[Pointer[GValue]] \v { $!column_values := v };
@@ -420,7 +602,7 @@ class GdaMetaTable is repr<CStruct> is export {
       STORE => -> $, CArray[gint] \v { $!columns := v };
   }
 
-  method pk_cols_array is rw {
+  method pk_cols_array is rw is also<pk-cols-array> {
     Proxy.new:
       FETCH => -> $                  { $!pk_cols_array      },
       STORE => -> $, CArray[gint] \v { $!pk_cols_array := v };
@@ -437,7 +619,7 @@ class GdaMetaView is repr<CStruct> is export {
 	has Str          $!view_def;
 	has gboolean     $.is_updatable;
 
-  method view_def is rw {
+  method view_def is rw is also<view-def> {
     Proxy.new:
       FETCH => -> $                  { $!view_def      },
       STORE => -> $, CArray[gint] \v { $!view_def := v };
@@ -459,19 +641,19 @@ class GdaMetaTableColumn is repr<CStruct> is export {
 	has gboolean  $.auto_incement;
   has Str       $!desc;
 
-  method column_type is rw {
+  method column_type is rw is also<column-type> {
     Proxy.new:
       FETCH => -> $           { $!column_type      },
       STORE => -> $, Str() \v { $!column_type := v }
   }
 
-  method column_name is rw {
+  method column_name is rw is also<column-name> {
     Proxy.new:
       FETCH => -> $           { $!column_name      },
       STORE => -> $, Str() \v { $!column_name := v }
   }
 
-  method default_value is rw {
+  method default_value is rw is also<default-value> {
     Proxy.new:
       FETCH => -> $           { $!default_value      },
       STORE => -> $, Str() \v { $!default_value := v }
@@ -487,6 +669,165 @@ class GdaMetaTableColumn is repr<CStruct> is export {
 	has gpointer $!gda_reserved2;
 	has gpointer $!gda_reserved3;
 	has gpointer $!gda_reserved4;
+}
+
+class GdaNumeric is repr<CStruct>is export {
+	has Str   $!number;
+	has glong $!precision;
+
+  method new {
+    gda_numeric_new();
+  }
+
+  submethod DESTROY { self!free }
+
+  method number is rw {
+    Proxy.new:
+      FETCH => -> $           { $!number      },
+      STORE => -> $, Str() \v { $!number := v }
+  }
+
+  method double is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_double    },
+      STORE => -> $, \v { self.set_double(v) };
+  }
+
+  method precision is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_precision    },
+      STORE => -> $, \v { self.set_precision(v) };
+  }
+
+  method width is rw {
+    Proxy.new:
+      FETCH => -> $     { self.get_width    },
+      STORE => -> $, \v { self.set_width(v) };
+  }
+
+  method copy {
+    propReturnObject(
+      gda_numeric_copy(self),
+      True,
+      GdaNumeric
+    );
+  }
+
+  method !free {
+    gda_numeric_free(self);
+  }
+
+  method get_double {
+    gda_numeric_get_double(self);
+  }
+
+  method get_precision {
+    gda_numeric_get_precision(self);
+  }
+
+  method get_string {
+    gda_numeric_get_string(self);
+  }
+
+  method get_type {
+    state ($n, $t);
+
+    unstable_get_type( self.^name, &gda_numeric_get_type(), $n, $t );
+  }
+
+  method get_width {
+    gda_numeric_get_width(self);
+  }
+
+  method set_double (Num() $number) {
+    my gdouble $n = $number;
+
+    gda_numeric_set_double(self, $n);
+  }
+
+  method set_from_string (Str() $str) {
+    gda_numeric_set_from_string(self, $str);
+  }
+
+  method set_precision (Int() $precision) {
+    my glong $p = $precision;
+
+    gda_numeric_set_precision(self, $p);
+  }
+
+  method set_width (Int() $width) {
+    my glong $w = $width;
+
+    gda_numeric_set_width(self, $w);
+  }
+
+  sub gda_numeric_copy (GdaNumeric $src)
+    returns GdaNumeric
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_free (GdaNumeric $numeric)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_get_double (GdaNumeric $numeric)
+    returns gdouble
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_get_precision (GdaNumeric $numeric)
+    returns glong
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_get_string (GdaNumeric $numeric)
+    returns Str
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_get_type ()
+    returns GType
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_get_width (GdaNumeric $numeric)
+    returns glong
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_new ()
+    returns GdaNumeric
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_set_double (GdaNumeric $numeric, gdouble $number)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_set_from_string (GdaNumeric $numeric, Str $str)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_set_precision (GdaNumeric $numeric, glong $precision)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_numeric_set_width (GdaNumeric $numeric, glong $width)
+    is native(gda)
+    is export
+  { * }
+
 }
 
 class GdaSqlField is repr<CStruct> is export {
@@ -535,43 +876,43 @@ class GdaMetaDbObject is repr<CStruct>is export {
 	has gpointer $!gda_reserved3;
 	has gpointer $!gda_reserved4;
 
-  method obj_catalog is rw {
+  method obj_catalog is rw is also<obj-catalog> {
     Proxy.new:
       FETCH => -> $           { $!obj_catalog      },
       STORE => -> $, Str() \v { $!obj_catalog := v }
   }
 
-  method obj_schema is rw {
+  method obj_schema is rw is also<obj-schema> {
     Proxy.new:
       FETCH => -> $           { $!obj_schema      },
       STORE => -> $, Str() \v { $!obj_schema := v }
   }
 
-  method obj_name is rw {
+  method obj_name is rw is also<obj-name> {
     Proxy.new:
       FETCH => -> $           { $!obj_name      },
       STORE => -> $, Str() \v { $!obj_name := v }
   }
 
-  method obj_short_name is rw {
+  method obj_short_name is rw is also<obj-short-name> {
     Proxy.new:
       FETCH => -> $           { $!obj_short_name      },
       STORE => -> $, Str() \v { $!obj_short_name := v }
   }
 
-  method obj_full_name is rw {
+  method obj_full_name is rw is also<obj-full-name> {
     Proxy.new:
       FETCH => -> $           { $!obj_full_name      },
       STORE => -> $, Str() \v { $!obj_full_name := v }
   }
 
-  method obj_owner is rw {
+  method obj_owner is rw is also<obj-owner> {
     Proxy.new:
       FETCH => -> $           { $!obj_owner      },
       STORE => -> $, Str() \v { $!obj_owner := v }
   }
 
-  method depend_list is rw {
+  method depend_list is rw is also<depend-list> {
     Proxy.new:
       FETCH => -> $           { $!depend_list      },
       STORE => -> $, Str() \v { $!depend_list := v }
@@ -718,6 +1059,139 @@ class GdaStatement is repr<CStruct> is export {
 class GdaThreadWrapper is repr<CStruct> is export {
 	has GObject   $!object;
 	has gpointer  $!priv  ;
+}
+
+class GdaTime is repr<CStruct> is export {
+	has gushort $.hour     is rw;
+	has gushort $.minute   is rw;
+	has gushort $.second   is rw;
+	has gulong  $.fraction is rw;
+	has glong   $.timezone is rw;
+
+  submethod DESTROY { self!free }
+
+  method change_timezone (glong $ntz) {
+    gda_time_change_timezone(self, $ntz);
+  }
+
+  method copy {
+    propReturnObject(
+      gda_time_copy(self),
+      True,
+      GdaTime
+    );
+  }
+
+  method !free {
+    gda_time_free(self);
+  }
+
+  method get_type {
+    state ($n, $t);
+
+    unstable_get_type( self.^name, &gda_time_get_type, $n, $t );
+  }
+
+  method valid {
+    so gda_time_valid(self);
+  }
+
+  sub gda_time_change_timezone (GdaTime $time, glong $ntz)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_time_copy (GdaTime $boxed)
+    returns Pointer
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_time_free (GdaTime $boxed)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_time_get_type ()
+    returns GType
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_time_valid (GdaTime $time)
+    returns uint32
+    is native(gda)
+    is export
+  { * }
+}
+
+class GdaTimestamp is repr<CStruct>is export {
+	has gshort  $.year     is rw;
+	has gushort $.month    is rw;
+	has gushort $.day      is rw;
+	has gushort $.hour     is rw;
+	has gushort $.minute   is rw;
+	has gushort $.second   is rw;
+	has gulong  $.fraction is rw;
+	has glong   $.timezone is rw;
+
+  submethod DESTROY { self!free }
+
+  method change_timezone (Int() $ntz) {
+    my glong $nntz = $ntz;
+
+    gda_timestamp_change_timezone(self, $nntz);
+  }
+
+  method copy {
+    propReturnObject(
+      gda_timestamp_copy(self),
+      True,
+      GdaTimestamp
+    );
+  }
+
+  method !free {
+    gda_timestamp_free(self);
+  }
+
+  method get_type {
+    state ($n, $t);
+
+    unstable_get_type( self.^name, &gda_timestamp_get_type, $n, $t );
+  }
+
+  method valid {
+    so gda_timestamp_valid(self);
+  }
+
+  sub gda_timestamp_change_timezone (GdaTimestamp $ts, glong $ntz)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_timestamp_copy (GdaTimestamp $boxed)
+    returns Pointer
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_timestamp_free (GdaTimestamp $boxed)
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_timestamp_get_type ()
+    returns GType
+    is native(gda)
+    is export
+  { * }
+
+  sub gda_timestamp_valid (GdaTimestamp $timestamp)
+    returns uint32
+    is native(gda)
+    is export
+  { * }
 }
 
 class GdaTransactionStatus is repr<CStruct> is export {
