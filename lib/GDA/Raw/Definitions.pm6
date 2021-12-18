@@ -1,6 +1,7 @@
 use v6.c;
 
 use GLib::Raw::Definitions;
+use GLib::Raw::Structs;
 
 use GLib::Roles::Pointers;
 
@@ -12,3 +13,5 @@ constant gda-xslt   is export = 'gda-xslt-5.0',v4;
 
 class GdaDataModel       is repr<CPointer> does GLib::Roles::Pointers is export { }
 class GdaDataHandler     is repr<CPointer> does GLib::Roles::Pointers is export { }
+
+constant GdaValue is export := GValue;
