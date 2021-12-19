@@ -13,5 +13,7 @@ constant gda-xslt   is export = 'gda-xslt-5.0',v4;
 
 class GdaDataModel       is repr<CPointer> does GLib::Roles::Pointers is export { }
 class GdaDataHandler     is repr<CPointer> does GLib::Roles::Pointers is export { }
+class GdaLockable        is repr<CPointer> does GLib::Roles::Pointers is export { }
 
+# Expand this in ::Raw::Structs and add gda_value_free
 constant GdaValue is export := GValue;
