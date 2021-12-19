@@ -12,6 +12,14 @@ use GLib::Value;
 class GDA::Value is GLib::Value {
   has GdaValue $!gv is implementor;
 
+  submethod BUILD ( :$gda-value ) {
+    $!gv = $gda-value if $gda-value
+  }
+
+  method GDA::Raw::Structs::GdaValue
+    is also<GdaValue>
+  { $!gv }
+
   method new (Int() $type) {
     my GType $t         = $type;
     my       $gda-value = gda_value_new($t);
