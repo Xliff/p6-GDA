@@ -73,7 +73,22 @@ class GDA::Connection {
     $gda-connection ?? self.bless( :$gda-connection ) !! Nil;
   }
 
-  method new_from_string (
+  multi method new_from_string (
+    Str()                   $provider_name,
+    Str()                   $cnc_string,
+    CArray[Pointer[GError]] $error          = gerror,
+    Str()                   :$auth_string   = Str,
+    Int()                   :$options       = 0,
+  ) {
+    samewith(
+      $provider_name,
+      $cnc_string,
+      $auth_string,
+      $options,
+      $error
+    );
+  }
+  multi method new_from_string (
     Str()                   $provider_name,
     Str()                   $cnc_string,
     Str()                   $auth_string,
@@ -482,7 +497,7 @@ class GDA::Connection {
   method delete_row_from_table (
     Str()                   $table,
     Str()                   $condition_column_name,
-    GValue()                $condition_value,
+    GValue()                $condition_value        = GValue,
     CArray[Pointer[GError]] $error                  = gerror
   ) {
     clear_error;
@@ -619,14 +634,21 @@ class GDA::Connection {
     unstable_get_type( self.^name, &gda_connection_get_type, $n, $t );
   }
 
+  # cw: varargs not currently in-scope!
+  #method insert_row_into_table (...)
+
   method insert_row_into_table (
-    Str()                   $table,
-    CArray[Pointer[GError]] $error  = gerror
+    $table,
+    %columns-and-data
   ) {
-    clear_error;
-    my $rv = so gda_connection_insert_row_into_table($!gc, $table, $error);
-    set_error($error);
-    $rv;
+    my (@cols, @vals);
+
+    for %columns-and-data.pairs {
+      @cols.push: .key;
+      @vals.push: .value;
+    }
+
+    self.insert_row_into_table_v($table, @cols, @vals);
   }
 
   proto method insert_row_into_table_v (|)
