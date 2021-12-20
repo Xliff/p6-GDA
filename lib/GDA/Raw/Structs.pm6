@@ -22,7 +22,7 @@ class GdaBinary is repr<CStruct> is export {
 	has CArray[uint8] $!data;
 	has glong         $.binary_length is rw;
 
-  submethod DESTROY { self!free }
+  #submethod DESTROY { self!free }
 
   method data is rw {
     Proxy.new:
@@ -679,7 +679,7 @@ class GdaNumeric is repr<CStruct>is export {
     gda_numeric_new();
   }
 
-  submethod DESTROY { self!free }
+  #submethod DESTROY { self!free }
 
   method number is rw {
     Proxy.new:
@@ -839,7 +839,7 @@ class GdaSqlField is repr<CStruct> is export {
 }
 
 class GdaSqlStatement is repr<CStruct> is export {
-	has Str                 $!sql                 ;
+	has CArray[uint8]       $!sql                 ;
 	has GdaSqlStatementType $!stmt_type           ;
 	has gpointer            $!contents            ;
 	has GdaMetaStruct       $!validity_meta_struct;
@@ -1068,7 +1068,7 @@ class GdaTime is repr<CStruct> is export {
 	has gulong  $.fraction is rw;
 	has glong   $.timezone is rw;
 
-  submethod DESTROY { self!free }
+  #submethod DESTROY { self!free }
 
   method change_timezone (glong $ntz) {
     gda_time_change_timezone(self, $ntz);
@@ -1135,7 +1135,7 @@ class GdaTimestamp is repr<CStruct>is export {
 	has gulong  $.fraction is rw;
 	has glong   $.timezone is rw;
 
-  submethod DESTROY { self!free }
+  #submethod DESTROY { self!free }
 
   method change_timezone (Int() $ntz) {
     my glong $nntz = $ntz;
