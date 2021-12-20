@@ -15,7 +15,7 @@ use GDA::Roles::Lockable;
 our subset GdaSqlParserAncestry is export of Mu
   where GdaSqlParser | GdaLockable | GObject;
 
-class GDA::Sql::Parser {
+class GDA::SQL::Parser {
   also does GLib::Roles::Object;
   also does GDA::Roles::Lockable;
 
@@ -148,18 +148,27 @@ class GDA::Sql::Parser {
     propReturnObject($b, $raw, |GDA::Batch.getTypePair);
   }
 
-  method parse_string (
+  proto method parse_string (|)
+    is also<parse-string>
+  { * }
+
+  multi method parse_string (
+    Str()                    $sql,
+    CArray[Pointer[GError]]  $error   = gerror,
+                            :$raw     = False
+  ) {
+    samewith($sql, newCArray(Str), $error, :$raw);
+  }
+  multi method parse_string (
     Str()                    $sql,
     CArray[Str]              $remain,
     CArray[Pointer[GError]]  $error   = gerror,
                             :$raw     = False
-  )
-    is also<parse-string>
-  {
+  ) {
     propReturnObject(
       gda_sql_parser_parse_string($!gsp, $sql, $remain, $error),
       $raw,
-      GDA::Statement.getTypePair
+      |GDA::Statement.getTypePair
     );
   }
 
