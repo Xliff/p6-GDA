@@ -42,7 +42,7 @@ class GDA::Statement {
     self!setObject($to-parent);
   }
 
-  method GDA::Raw::Definition::GdaStatement
+  method GDA::Raw::Structs::GdaStatement
     is also<GdaStatement>
   { $!gs }
 
