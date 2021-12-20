@@ -1,14 +1,26 @@
 use v6.c;
 
+use Method::Also;
+
 use NativeCall;
 
 use GDA::Raw::Types;
 use GDA::Raw::Connection;
 
 use GLib::GList;
+use GLib::GSList;
 use GLib::Value;
+# use GDA::Connection::Event;
+use GDA::Holder;
+# use GDA::Meta::Store;
+use GDA::Set;
+# use GDA::Service::Provider;
+use GDA::SQL::Parser;
+use GDA::Statement;
+# use GDA::TransactionStatus;
 
 use GLib::Roles::Object;
+use GDA::Roles::Data::Model;
 
 our subset GdaConnectionAncestry is export of Mu
   where GdaConnection | GObject;
@@ -58,7 +70,9 @@ class GDA::Connection {
     Str()                   $auth_string,
     Int()                   $options,
     CArray[Pointer[GError]] $error        = gerror
-  ) {
+  )
+    is also<new-from-dsn>
+  {
     my GdaConnectionOptions $o = $options;
 
     clear_error;
@@ -73,12 +87,16 @@ class GDA::Connection {
     $gda-connection ?? self.bless( :$gda-connection ) !! Nil;
   }
 
+  proto method new_from_string (|)
+    is also<new-from-string>
+  { * }
+
   multi method new_from_string (
     Str()                   $provider_name,
     Str()                   $cnc_string,
     CArray[Pointer[GError]] $error          = gerror,
     Str()                   :$auth_string   = Str,
-    Int()                   :$options       = 0,
+    Int()                   :$options       = GDA_CONNECTION_OPTIONS_NONE
   ) {
     samewith(
       $provider_name,
@@ -123,7 +141,9 @@ class GDA::Connection {
     Str()                   $auth_string,
     Int()                   $options,
     CArray[Pointer[GError]] $error        = gerror
-  ) {
+  )
+    is also<open-from-dsn>
+  {
     my GdaConnectionOptions $o = $options;
 
     clear_error;
@@ -138,13 +158,28 @@ class GDA::Connection {
     $gda-connection ?? self.bless( :$gda-connection ) !! Nil;
   }
 
-  method open_from_string (
+  proto method open_from_string (|)
+    is also<open-from-string>
+  { *}
+
+  multi method open_from_string (
+    Str()                    $provider_name,
+    Str()                    $cnc_string,
+    CArray[Pointer[GError]]  $error          = gerror,
+    Str()                   :$auth_string    = Str,
+    Int()                   :$options        = GDA_CONNECTION_OPTIONS_NONE
+  ) {
+    samewith($provider_name, $cnc_string, $auth_string, $options, $error);
+  }
+  multi method open_from_string (
     Str()                   $provider_name,
     Str()                   $cnc_string,
     Str()                   $auth_string,
     Int()                   $options,
     CArray[Pointer[GError]] $error        = gerror
-  ) {
+  )
+
+  {
     my GdaConnectionOptions $o = $options;
 
     clear_error;
@@ -161,7 +196,7 @@ class GDA::Connection {
   }
 
   # Type: gchar
-  method auth-string is rw  {
+  method auth-string is rw  is also<auth_string> {
     my $gv = GLib::Value.new( G_TYPE_STRING );
     Proxy.new(
       FETCH => sub ($) {
@@ -178,7 +213,7 @@ class GDA::Connection {
   }
 
   # Type: gchar
-  method cnc-string is rw  {
+  method cnc-string is rw  is also<cnc_string> {
     my $gv = GLib::Value.new( G_TYPE_STRING );
     Proxy.new(
       FETCH => sub ($) {
@@ -212,7 +247,7 @@ class GDA::Connection {
   }
 
   # Type: gint
-  method events-history-size is rw  {
+  method events-history-size is rw  is also<events_history_size> {
     my $gv = GLib::Value.new( G_TYPE_INT );
     Proxy.new(
       FETCH => sub ($) {
@@ -229,7 +264,7 @@ class GDA::Connection {
   }
 
   # Type: guint
-  method execution-slowdown is rw  {
+  method execution-slowdown is rw  is also<execution_slowdown> {
     my $gv = GLib::Value.new( G_TYPE_UINT );
     Proxy.new(
       FETCH => sub ($) {
@@ -246,7 +281,7 @@ class GDA::Connection {
   }
 
   # Type: gboolean
-  method execution-timer is rw  {
+  method execution-timer is rw  is also<execution_timer> {
     my $gv = GLib::Value.new( G_TYPE_BOOLEAN );
     Proxy.new(
       FETCH => sub ($) {
@@ -263,8 +298,8 @@ class GDA::Connection {
   }
 
   # Type: GdaMetaStore
-  method meta-store ( :$raw = False ) is rw  {
-    my $gv = GLib::Value.new( GDA::MetaStore.get_type );
+  method meta-store ( :$raw = False ) is rw  is also<meta_store> {
+    my $gv = GLib::Value.new( GDA::Meta::Store.get_type );
     Proxy.new(
       FETCH => sub ($) {
         $gv = GLib::Value.new(
@@ -335,7 +370,7 @@ class GDA::Connection {
 
   # Is originally:
   # GdaConnection, gpointer --> void
-  method dsn-changed {
+  method dsn-changed is also<dsn_changed> {
     self.connect($!gc, 'dsn-changed');
   }
 
@@ -353,24 +388,28 @@ class GDA::Connection {
 
   # Is originally:
   # GdaConnection, GdaConnectionStatus, gpointer --> void
-  method status-changed {
+  method status-changed is also<status_changed> {
     self.connect-uint($!gc, 'status-changed');
   }
 
   # Is originally:
   # GdaConnection, gpointer --> void
-  method transaction-status-changed {
+  method transaction-status-changed is also<transaction_status_changed> {
     self.connect($!gc, 'transaction-status-changed');
   }
 
-  method add_savepoint (Str() $name, CArray[Pointer[GError]] $error = gerror) {
+  method add_savepoint (Str() $name, CArray[Pointer[GError]] $error = gerror)
+    is also<add-savepoint>
+  {
     clear_error;
     my $rv = so gda_connection_add_savepoint($!gc, $name, $error);
     set_error($error);
     $rv;
   }
 
-  method async_cancel (Int() $task_id, CArray[Pointer[GError]] $error) {
+  method async_cancel (Int() $task_id, CArray[Pointer[GError]] $error)
+    is also<async-cancel>
+  {
     my guint $t = $task_id;
 
     clear_error;
@@ -383,7 +422,9 @@ class GDA::Connection {
     Int()                   $task_id,
     CArray[GdaSet]          $last_insert_row,
     CArray[Pointer[GError]] $error            = gerror
-  ) {
+  )
+    is also<async-fetch-result>
+  {
     my guint $t = $task_id;
 
     clear_error;
@@ -404,7 +445,9 @@ class GDA::Connection {
     Int()                   $need_last_insert_row,
     Int()                   $col_types,
     CArray[Pointer[GError]] $error                 = gerror
-  ) {
+  )
+    is also<async-statement-execute>
+  {
     my GdaStatementModelUsage $m = $model_usage;
     my GType                  $c = $col_types;
     my gboolean               $n = $need_last_insert_row.so.Int;
@@ -430,7 +473,9 @@ class GDA::Connection {
     CArray[Pointer[GError]]  $error        = gerror,
                             :$raw          = False,
                             :$glist        = False
-  ) {
+  )
+    is also<batch-execute>
+  {
     my GdaStatementModelUsage $m = $model_usage;
 
     clear_error;
@@ -444,7 +489,9 @@ class GDA::Connection {
     Str()                   $name,
     Int()                   $level,
     CArray[Pointer[GError]] $error  = gerror
-  ) {
+  )
+    is also<begin-transaction>
+  {
     my GdaTransactionIsolation $l = $level;
 
     clear_error;
@@ -457,14 +504,16 @@ class GDA::Connection {
     so gda_connection_close($!gc);
   }
 
-  method close_no_warning {
+  method close_no_warning is also<close-no-warning> {
     so gda_connection_close_no_warning($!gc);
   }
 
   method commit_transaction (
     Str()                   $name,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<commit-transaction>
+  {
     clear_error;
     my $rv = so gda_connection_commit_transaction($!gc, $name, $error);
     set_error($error);
@@ -476,7 +525,9 @@ class GDA::Connection {
     GdaSet()                 $options,
     CArray[Pointer[GError]]  $error    = gerror,
                             :$raw      = False
-  ) {
+  )
+    is also<create-operation>
+  {
     my GdaServerOperationType $t = $type;
 
     set_error($error);
@@ -486,11 +537,11 @@ class GDA::Connection {
     propReturnObject($o, $raw, |GDA::ServerOperation.getTypePair);
   }
 
-  method create_parser ( :$raw = False ) {
+  method create_parser ( :$raw = False ) is also<create-parser> {
     propReturnObject(
       gda_connection_create_parser($!gc),
       $raw,
-      |GDA::SqlParser.getTypePair
+      |GDA::SQL::Parser.getTypePair
     );
   }
 
@@ -499,7 +550,9 @@ class GDA::Connection {
     Str()                   $condition_column_name,
     GValue()                $condition_value        = GValue,
     CArray[Pointer[GError]] $error                  = gerror
-  ) {
+  )
+    is also<delete-row-from-table>
+  {
     clear_error;
     my $rv = so gda_connection_delete_row_from_table(
       $!gc,
@@ -515,21 +568,25 @@ class GDA::Connection {
   method delete_savepoint (
     Str()                   $name,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<delete-savepoint>
+  {
     clear_error;
     my $rv = so gda_connection_delete_savepoint($!gc, $name, $error);
     set_error($error);
     $rv;
   }
 
-  method error_quark (GDA::Connection:U: ) {
+  method error_quark (GDA::Connection:U: ) is also<error-quark> {
     gda_connection_error_quark();
   }
 
   method execute_non_select_command (
     Str()                   $sql,
     CArray[Pointer[GError]] $error = gerror;
-  ) {
+  )
+    is also<execute-non-select-command>
+  {
     clear_error;
     my $rv = so gda_connection_execute_non_select_command($!gc, $sql, $error);
     set_error($error);
@@ -539,22 +596,25 @@ class GDA::Connection {
   method execute_select_command (
     Str                     $sql,
     CArray[Pointer[GError]] $error = gerror;
-  ) {
+  )
+    is also<execute-select-command>
+  {
     clear_error;
     my $rv = so gda_connection_execute_select_command($!gc, $sql, $error);
     set_error($error);
     $rv;
   }
 
-  method get_authentication {
+  method get_authentication is also<get-authentication> {
     gda_connection_get_authentication($!gc);
   }
 
-  method get_cnc_string {
+  method get_cnc_string is also<get-cnc-string> {
     gda_connection_get_cnc_string($!gc);
   }
 
   proto method get_date_format (|)
+    is also<get-date-format>
   { *}
 
   multi method get_date_format (CArray[Pointer[GError]]  $error = gerror) {
@@ -580,27 +640,68 @@ class GDA::Connection {
     $all.not ?? $rv !! ($rv, $out_first, $out_second, $out_third, $out_sep)
   }
 
-  method get_dsn {
+  method get_dsn is also<get-dsn> {
     gda_connection_get_dsn($!gc);
   }
 
-  method get_events {
-    gda_connection_get_events($!gc);
+  method get_events ( :$glist = False, :$raw = False ) is also<get-events> {
+    returnGList(
+      gda_connection_get_events($!gc),
+      $raw,
+      $glist,
+      |GDA::Connection::Event.getTypePair
+    )
   }
 
-  method get_meta_store {
-    gda_connection_get_meta_store($!gc);
+  method get_meta_store ( :$raw = False ) is also<get-meta-store> {
+    propReturnObject(
+      gda_connection_get_meta_store($!gc),
+      $raw,
+      |GDA::MetaStore.getTypePair
+    );
   }
 
-  method get_meta_store_data (GdaConnectionMetaType $meta_type, CArray[Pointer[GError]] $error, gint $nb_filters) {
-    gda_connection_get_meta_store_data($!gc, $meta_type, $error, $nb_filters);
+  # cw: var-args are currently out-of-scope
+  # method get_meta_store_data (
+  #   Int()                   $meta_type,
+  #   CArray[Pointer[GError]] $error,     = gerror
+  #   Int()                   $nb_filters
+  #                           ...         #= Filters (count: $nb_filters)
+  # )
+  #   is also<get-meta-store-data>
+  # {
+  #   my GdaConnectionMetaType $m = $meta_type;
+  #
+  #   gda_connection_get_meta_store_data($!gc, $meta_type, $error, $nb_filters);
+  # }
+
+  proto method get_meta_store_data_v (|)
+  { * }
+
+  multi method get_meta_store_data_v (
+    Int()                   $meta_type,
+                            @filters,
+    CArray[Pointer[GError]] $error      = gerror
+  ) {
+    samewith(
+      $meta_type,
+      GLib::GList.new(@filters, typed => GdaHolder),
+      $error
+    );
+  }
+  multi method get_meta_store_data_v (
+    Int()                   $meta_type,
+    GList()                 $filters,
+    CArray[Pointer[GError]] $error      = gerror
+  )
+    is also<get-meta-store-data-v>
+  {
+    my GdaConnectionMetaType $m = $meta_type;
+
+    gda_connection_get_meta_store_data_v($!gc, $m, $filters, $error);
   }
 
-  method get_meta_store_data_v (GdaConnectionMetaType $meta_type, GList $filters, CArray[Pointer[GError]] $error) {
-    gda_connection_get_meta_store_data_v($!gc, $meta_type, $filters, $error);
-  }
-
-  method get_options ( :$flags = True ) {
+  method get_options ( :$flags = True ) is also<get-options> {
     my $f = gda_connection_get_options($!gc);
 
     return $f unless $flags;
@@ -608,19 +709,19 @@ class GDA::Connection {
     getFlags(GdaConnectionOptionsEnum, $flags);
   }
 
-  method get_provider ( :$raw = False ) {
+  method get_provider ( :$raw = False ) is also<get-provider> {
     propReturnObject(
       gda_connection_get_provider($!gc),
       $raw,
-      |GDA::ServiceProvider.getTypePair
+      |GDA::Service::Provider.getTypePair
     );
   }
 
-  method get_provider_name {
+  method get_provider_name is also<get-provider-name> {
     gda_connection_get_provider_name($!gc);
   }
 
-  method get_transaction_status ( :$raw = False ) {
+  method get_transaction_status ( :$raw = False ) is also<get-transaction-status> {
     propReturnObject(
       gda_connection_get_transaction_status($!gc),
       $raw,
@@ -628,7 +729,7 @@ class GDA::Connection {
     )
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gda_connection_get_type, $n, $t );
@@ -637,9 +738,16 @@ class GDA::Connection {
   # cw: varargs not currently in-scope!
   #method insert_row_into_table (...)
 
-  method insert_row_into_table (
+  proto method insert_row_into_table (|)
+    is also<insert-row-into-table>
+  { * }
+
+  multi method insert_row_into_table ($table, %columns-and-data) {
+    samewith($table, |%columns-and-data);
+  }
+  multi method insert_row_into_table (
     $table,
-    %columns-and-data
+    *%columns-and-data
   ) {
     my (@cols, @vals);
 
@@ -652,6 +760,7 @@ class GDA::Connection {
   }
 
   proto method insert_row_into_table_v (|)
+    is also<insert-row-into-table-v>
   { * }
 
   multi method insert_row_into_table_v (
@@ -688,11 +797,12 @@ class GDA::Connection {
     $rv;
   }
 
-  method is_opened {
+  method is_opened is also<is-opened> {
     so gda_connection_is_opened($!gc);
   }
 
   proto method parse_sql_string (|)
+    is also<parse-sql-string>
   { * }
 
   multi method parse_sql_string (
@@ -726,14 +836,16 @@ class GDA::Connection {
   method perform_operation (
     GdaServerOperation()    $op,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<perform-operation>
+  {
     clear_error;
     my $rv = so gda_connection_perform_operation($!gc, $op, $error);
     set_error($error);
     $rv;
   }
 
-  method quote_sql_identifier (Str() $id) {
+  method quote_sql_identifier (Str() $id) is also<quote-sql-identifier> {
     gda_connection_quote_sql_identifier($!gc, $id);
   }
 
@@ -745,7 +857,9 @@ class GDA::Connection {
     CArray[Pointer[GError]]   $error          = gerror,
                              :$raw            = False,
                              :$glist          = False
-  ) {
+  )
+    is also<repetitive-statement-execute>
+  {
     my GdaStatementModelUsage $m = $model_usage;
     my GType                  $c = $col_types;
     my gboolean               $s = $stop_on_error.so.Int;
@@ -767,7 +881,9 @@ class GDA::Connection {
   method rollback_savepoint (
     Str()                   $name,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<rollback-savepoint>
+  {
     clear_error;
     my $rv = so gda_connection_rollback_savepoint($!gc, $name, $error);
     set_error($error);
@@ -777,7 +893,9 @@ class GDA::Connection {
   method rollback_transaction (
     Str()                   $name,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<rollback-transaction>
+  {
     clear_error;
     my $rv = so gda_connection_rollback_transaction($!gc, $name, $error);
     set_error($error);
@@ -785,6 +903,7 @@ class GDA::Connection {
   }
 
   proto method statement_execute (|)
+    is also<statement-execute>
   { * }
 
   multi method statement_execute (
@@ -841,11 +960,12 @@ class GDA::Connection {
   }
 
   proto method statement_execute_non_select (|)
+    is also<statement-execute-non-select>
   { * }
 
   multi method statement_execute_non_select (
     GdaStatement()           $stmt,
-    GdaSet()                 $params,
+    GdaSet()                 $params  = GdaSet,
     CArray[Pointer[GError]]  $error   = gerror,
                             :$raw     = False
   ) {
@@ -856,7 +976,7 @@ class GDA::Connection {
   multi method statement_execute_non_select (
     GdaStatement()           $stmt,
     GdaSet()                 $params,
-    CArray[GdaSet]           $last_insert_row,
+    CArray[Pointer[GdaSet]]  $last_insert_row,
     CArray[Pointer[GError]]  $error            = gerror,
                             :$all              = False,
                             :$raw              = False
@@ -882,10 +1002,12 @@ class GDA::Connection {
 
   method statement_execute_select (
     GdaStatement()           $stmt,
-    GdaSet()                 $params,
-    CArray[Pointer[GError]]  $error   = gerror,
-                            :$raw     = False
-  ) {
+    GdaSet()                 $params = GdaSet,
+    CArray[Pointer[GError]]  $error  = gerror,
+                            :$raw    = False
+  )
+    is also<statement-execute-select>
+  {
     clear_error;
     my $m = gda_connection_statement_execute_select(
       $!gc,
@@ -895,10 +1017,13 @@ class GDA::Connection {
     );
     set_error($error);
 
-    propReturnObject($m, $raw, |GDA::Model.getTypePair);
+
+
+    propReturnObject($m, $raw, |GDA::Data::Model.getTypePair);
   }
 
   proto method statement_execute_select_full (|)
+    is also<statement-execute-select-full>
   { * }
 
   multi method statement_execute_select_full (
@@ -948,7 +1073,9 @@ class GDA::Connection {
   method statement_prepare (
     GdaStatement()          $stmt,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<statement-prepare>
+  {
     clear_error;
     my $rv = so gda_connection_statement_prepare($!gc, $stmt, $error);
     set_error($error);
@@ -956,6 +1083,7 @@ class GDA::Connection {
   }
 
   proto method statement_to_sql (|)
+    is also<statement-to-sql>
   { * }
 
   multi method statement_to_sql (
@@ -1010,7 +1138,7 @@ class GDA::Connection {
     $all.not ?? $sql !! ($sql, $pl);
   }
 
-  method supports_feature (Int() $feature) {
+  method supports_feature (Int() $feature) is also<supports-feature> {
     my GdaConnectionFeature $f = $feature;
 
     so gda_connection_supports_feature($!gc, $f);
@@ -1019,7 +1147,9 @@ class GDA::Connection {
   method update_meta_store (
     GdaMetaContext()        $context,
     CArray[Pointer[GError]] $error     = gerror
-  ) {
+  )
+    is also<update-meta-store>
+  {
     clear_error;
     my $rv = so gda_connection_update_meta_store($!gc, $context, $error);
     set_error($error);
@@ -1029,39 +1159,77 @@ class GDA::Connection {
   # cw: varargs not supported, so skipped.
   #method update_row_in_table (...)
 
-  proto method update_row_in_table_v (|)
+  proto method update_row_in_table (|)
+    is also<update-row-in-table>
   { * }
 
-  multi method update_row_in_table_v (
+
+  # multi method update_row_in_table (
+  #   Str()                   $table,
+  #   Pair                    $condition_column,
+  #   CArray[Pointer[GError]] $error                   = gerror,
+  #                           %col_name_values         = ().Hash
+  # ) {
+  #   samewith(
+  #     $table,
+  #     $condition_column.key,
+  #     $condition_column.value,
+  #     $error,
+  #     |%col_name_values
+  #   );
+  # }
+  # multi method update_row_in_table (
+  #   Str()                    $table,
+  #   Pair                     $condition_column,
+  #   CArray[Pointer[GError]]  $error                   = gerror,
+  #                           *%col_name_values
+  # ) {
+  #   samewith(
+  #     $table,
+  #     $condition_column.key,
+  #     $condition_column.value,
+  #     $error,
+  #     %col_name_values.keys,
+  #     %col_name_values.values
+  #   )
+  # }
+  # multi method update_row_in_table (
+  #   Str()                   $table,
+  #   Str()                   $condition_column_name,
+  #   GValue()                $condition_value,
+  #   CArray[Pointer[GError]] $error                   = gerror,
+  #                           %col_name_values         = ().Hash
+  # ) {
+  #   samewith(
+  #     $table,
+  #     $condition_column_name,
+  #     $condition_value,
+  #     $error
+  #     |%col_name_values
+  #   );
+  # }
+  multi method update_row_in_table (
     Str()                   $table,
     Str()                   $condition_column_name,
     GValue()                $condition_value,
     CArray[Pointer[GError]] $error                   = gerror,
                             *%col_name_values
   ) {
-    samewith(
+    self.update_row_in_table_v(
       $table,
       $condition_column_name,
       $condition_value,
       %col_name_values.keys,
       # cw: Should break this out into a generic Val -> GValue routine!
-      %col_name_values.values.map({
-        when Str                           { gv_str($_)         }
-        when Num                           { gv_dbl($_)         }
-        when Int                           { gv_int64($_)       }
-        when GLib::Roles::Object           { gv_obj( .GObject ) }
-        when GObject                       { gv_obj($_)         }
-        when .REPR eq <CStruct CUnion>.any { gv_ptr($_)         }
-
-        default {
-          say "Do not know how to handle object of type {
-               .^name } in update!"
-
-        }
-      }),
+      %col_name_values.values,
       $error
     )
   }
+
+  proto method update_row_in_table_v (|)
+    is also<update-row-in-table-v>
+  { * }
+
   multi method update_row_in_table_v (
     Str()                   $table,
     Str()                   $condition_column_name,
@@ -1087,6 +1255,9 @@ class GDA::Connection {
     GSList()                $values,
     CArray[Pointer[GError]] $error                   = gerror
   ) {
+    say "URIT: $table / $condition_column_name / $condition_value / {
+         $col_names.Array.gist } / { $values.Array.gist }";
+
     clear_error;
     my $rv = so gda_connection_update_row_in_table_v(
       $!gc,
@@ -1101,7 +1272,7 @@ class GDA::Connection {
     $rv;
   }
 
-  method value_to_sql_string (GValue() $from) {
+  method value_to_sql_string (GValue() $from) is also<value-to-sql-string> {
     gda_connection_value_to_sql_string($!gc, $from);
   }
 
