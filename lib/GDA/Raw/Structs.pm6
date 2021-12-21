@@ -424,10 +424,11 @@ class GdaSqlParser is repr<CStruct> is export {
 	has gpointer  $!priv  ;
 }
 
-class GdaServerProviderPrivates is repr<CStruct> is export {
-	has GHashTable   $!data_handlers;
-	has GdaSqlParser $!parser       ;
-}
+# cw: Not really a part of the public API
+# class GdaServerProviderPrivates is repr<CStruct> is export {
+# 	has GHashTable   $!data_handlers;
+# 	has GdaSqlParser $!parser       ;
+# }
 
 class GdaSetSource is repr<CStruct> is export {
   has GdaDataModel   $!data_model;      #= Can't be NULL
@@ -854,7 +855,10 @@ class GdaSqlParserIface is repr<CStruct> is export {
 	has gpointer        $!_gda_reserved2  ;
 }
 
-class GdaMetaTableView is repr<CUnion> is export {
+class GdaMetaTableView is repr<CUnion>
+  is   export
+  does StructSkipsTest['custom union']
+{
   HAS GdaMetaTable $.meta_table;
   HAS GdaMetaView  $.meta_view;
 }
@@ -1125,7 +1129,7 @@ class GdaTime is repr<CStruct> is export {
   { * }
 }
 
-class GdaTimestamp is repr<CStruct>is export {
+class GdaTimestamp is repr<CStruct> is export {
 	has gshort  $.year     is rw;
 	has gushort $.month    is rw;
 	has gushort $.day      is rw;
@@ -1288,7 +1292,10 @@ class GdaVconnectionHub is repr<CStruct> is export {
 	has gpointer                 $!priv  ;
 }
 
-class GdaVirtualConstraint is repr<CStruct> is export {
+class GdaVirtualConstraint is repr<CStruct>
+  is   export
+  does StructSkipsTest['iternal struct']
+{
 	has int                $!iColumn;
 	has GdaSqlOperatorType $!op     ;
 }
@@ -1303,7 +1310,10 @@ class GdaVirtualOrderby is repr<CStruct> is export {
 	has gboolean $!desc   ;
 }
 
-class GdaVirtualProvider is repr<CStruct> is export {
+class GdaVirtualProvider is repr<CStruct>
+  is   export
+  does StructSkipsTest['internal struct']
+{
   HAS GdaSqliteProvider  $.provider;
   has gpointer           $!gda_reserved1; #= & (void)
 };
