@@ -6,6 +6,8 @@ use NativeCall;
 
 use GDA::Raw::Types;
 
+use GLib::Value;
+
 use GLib::Roles::Object;
 
 our subset GdaReportDocumentAncestry is export of Mu
@@ -49,6 +51,44 @@ class GDA::Report::Document {
     $o;
   }
 
+  # Type: gchar
+  method template is rw  {
+    my $gv = GLib::Value.new( G_TYPE_STRING );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('template', $gv)
+        );
+        $gv.string;
+      },
+      STORE => -> $, Str() $val is copy {
+        $gv.string = $val;
+        self.prop_set('template', $gv);
+      }
+    );
+  }
+
+  # Type: GdaReportEngine
+  method engine ( :$raw = False ) is rw  {
+    my $gv = GLib::Value.new( GDA::Report::Engine.get_type );
+    Proxy.new(
+      FETCH => -> $ {
+        $gv = GLib::Value.new(
+          self.prop_get('template', $gv)
+        );
+        propReturnObject(
+          $gv.object,
+          $raw,
+          GDA::Report::Engine.getTypePair
+        );
+      },
+      STORE => -> $, GdaReportEngine() $val is copy {
+        $gv.object = $val;
+        self.prop_set('template', $gv);
+      }
+    );
+  }
+
   method get_type is also<get-type> {
     state ($n, $t);
 
@@ -89,7 +129,7 @@ class GDA::Report::Document {
 
 sub gda_report_document_get_type ()
   returns GType
-  is native(gda)
+  is native(gda-report)
   is export
 { * }
 
@@ -99,7 +139,7 @@ sub gda_report_document_run_as_html (
   CArray[Pointer[GError]] $error
 )
   returns uint32
-  is native(gda)
+  is native(gda-report)
   is export
 { * }
 
@@ -109,11 +149,11 @@ sub gda_report_document_run_as_pdf (
   CArray[Pointer[GError]] $error
 )
   returns uint32
-  is native(gda)
+  is native(gda-report)
   is export
 { * }
 
 sub gda_report_document_set_template (GdaReportDocument $doc, Str $file)
-  is native(gda)
+  is native(gda-report)
   is export
 { * }
