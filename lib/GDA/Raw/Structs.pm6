@@ -14,7 +14,7 @@ use GDA::Raw::Enums;
 unit package GDA::Raw::Structs;
 
 class GdaBatch is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
@@ -88,7 +88,7 @@ class GdaBinary is repr<CStruct> is export {
 }
 
 class GdaBlobOp is repr<CStruct> is export {
-	has GObject  $!object        ;
+	HAS GObject  $!object        ;
 	has gpointer $!_gda_reserved1;
 }
 
@@ -162,52 +162,52 @@ class GdaBlob is repr<CStruct>is export {
 }
 
 class GdaColumn is repr<CStruct> is export {
-	has GObject          $!object;
+	HAS GObject          $!object;
 	has gpointer         $!priv  ;
 }
 
 class GdaConfig is repr<CStruct> is export {
-	has GObject          $!object;
+	HAS GObject          $!object;
 	has gpointer         $!priv  ;
 }
 
 class GdaConnection is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaConnectionEvent is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaDataAccessWrapper is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaDataComparator is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaDataModelArray is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaDataModelDir is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaDataModelImport is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaSet is repr<CStruct> is export {
-	has GObject       $!object      ;
+	HAS GObject       $!object      ;
 	has gpointer      $!priv        ;
 	has GSList        $!holders     ;
 	has GSList        $!nodes_list  ;
@@ -216,22 +216,22 @@ class GdaSet is repr<CStruct> is export {
 }
 
 class GdaDataModelIter is repr<CStruct> is export {
-	has GdaSet              $!object;
+	HAS GdaSet              $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaDataPivot is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaDataProxy is repr<CStruct> is export {
-	has GObject             $!object;
+	HAS GObject             $!object;
 	has gpointer            $!priv  ;
 }
 
 class GdaPStmt is repr<CStruct> is export {
-	has GObject         $!object        ;
+	HAS GObject         $!object        ;
 	has gpointer        $!priv          ;
 	has Str             $!sql           ;
 	has GSList          $!param_ids     ;
@@ -243,7 +243,7 @@ class GdaPStmt is repr<CStruct> is export {
 }
 
 class GdaDataSelect is repr<CStruct> is export {
-	has GObject              $!object          ;
+	HAS GObject              $!object          ;
 	has gpointer             $!priv            ;
 	has GdaPStmt             $!prep_stmt       ;
 	has gint                 $!nb_stored_rows  ;
@@ -309,47 +309,47 @@ class GdaGeometricPoint is repr<CStruct> is export {
 }
 
 class GdaHandlerBin is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaHandlerBoolean is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaHandlerNumerical is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaHandlerString is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaHandlerTime is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaHandlerType is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaHolder is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaMetaStore is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaMetaStruct is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
@@ -366,41 +366,41 @@ class GdaProviderInfo is repr<CStruct> is export {
 }
 
 class GdaRepetitiveStatement is repr<CStruct> is export {
-	has GObject $!parent_instance;
+	HAS GObject $!parent_instance;
 }
 
 # cw: Move to ::Raw::Class compunit... possibly in another distro
 # class GdaRepetitiveStatementClass is repr<CStruct> is export {
-# 	has GObjectClass $!parent_class;
+# 	HAS GObjectClass $!parent_class;
 # }
 
 class GdaReportDocument is repr<CStruct> is export {
-	has GObject   $!base;
+	HAS GObject   $!base;
 	has gpointer  $!priv;
 }
 
 class GdaReportDocbookDocument is repr<CStruct> is export {
-	has GdaReportDocument $!base;
+	HAS GdaReportDocument $!base;
 	has gpointer          $!priv;
 }
 
 class GdaReportEngine is repr<CStruct> is export {
-	has GObject   $!base;
+	HAS GObject   $!base;
 	has gpointer  $!priv;
 }
 
 class GdaReportRmlDocument is repr<CStruct> is export {
-	has GdaReportDocument  $!base;
+	HAS GdaReportDocument  $!base;
 	has gpointer           $!priv;
 }
 
 class GdaRow is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaServerOperation is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
@@ -415,12 +415,12 @@ class GdaServerOperationNode is repr<CStruct> is export {
 }
 
 class GdaServerProvider is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaSqlParser is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
@@ -431,7 +431,7 @@ class GdaSqlParser is repr<CStruct> is export {
 # }
 
 class GdaSetSource is repr<CStruct> is export {
-  has GdaDataModel   $!data_model;      #= Can't be NULL
+  HAS GdaDataModel   $!data_model;      #= Can't be NULL
   has GSList         $!nodes;           #= list of #GdaSetNode for which source_model == @data_mode
   has gpointer       $!gda_reserved1;
   has gpointer       $!gda_reserved2;
@@ -498,12 +498,12 @@ class GdaSqlAnyPart is repr<CStruct> is export {
 }
 
 class GdaSqlBuilder is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaSqlFunction is repr<CStruct> is export {
-	has GdaSqlAnyPart $!any           ;
+	HAS GdaSqlAnyPart $!any           ;
 	has Str           $!function_name ;
 	has GSList        $!args_list     ;
 	has gpointer      $!_gda_reserved1;
@@ -511,7 +511,7 @@ class GdaSqlFunction is repr<CStruct> is export {
 }
 
 class GdaSqlOperation is repr<CStruct> is export {
-	has GdaSqlAnyPart      $!any           ;
+	HAS GdaSqlAnyPart      $!any           ;
 	has GdaSqlOperatorType $!operator_type ;
 	has GSList             $!operands      ;
 	has gpointer           $!_gda_reserved1;
@@ -532,7 +532,7 @@ class GdaSqlParamSpec is repr<CStruct> is export {
 class GdaSqlCase is repr<CStruct> is export { ... }
 
 class GdaSqlExpr is repr<CStruct> is export {
-	has GdaSqlAnyPart   $!any           ;
+	HAS GdaSqlAnyPart   $!any           ;
 	has GValue          $!value         ;
 	has GdaSqlParamSpec $!param_spec    ;
 	has GdaSqlFunction  $!func          ;
@@ -639,8 +639,8 @@ class GdaMetaTableColumn is repr<CStruct> is export {
 	has gboolean  $.pkey;
 	has gboolean  $.nullok;
   has Str       $!default_value;
-	has gboolean  $.auto_incement;
-  has Str       $!desc;
+	# has gboolean  $.auto_incement;
+  # has Str       $!desc;
 
   method column_type is rw is also<column-type> {
     Proxy.new:
@@ -660,12 +660,6 @@ class GdaMetaTableColumn is repr<CStruct> is export {
       STORE => -> $, Str() \v { $!default_value := v }
   }
 
-  method desc is rw {
-    Proxy.new:
-      FETCH => -> $           { $!desc      },
-      STORE => -> $, Str() \v { $!desc := v }
-  }
-
 	has gpointer $!gda_reserved1;
 	has gpointer $!gda_reserved2;
 	has gpointer $!gda_reserved3;
@@ -673,8 +667,11 @@ class GdaMetaTableColumn is repr<CStruct> is export {
 }
 
 class GdaNumeric is repr<CStruct>is export {
-	has Str   $!number;
-	has glong $!precision;
+	has Str      $!number;
+	has glong    $!precision;
+  has glong    $!width;
+
+  has gpointer $!reserved;
 
   method new {
     gda_numeric_new();
@@ -832,7 +829,7 @@ class GdaNumeric is repr<CStruct>is export {
 }
 
 class GdaSqlField is repr<CStruct> is export {
-	has GdaSqlAnyPart      $!any                       ;
+	HAS GdaSqlAnyPart      $!any                       ;
 	has Str                $!field_name                ;
 	has GdaMetaTableColumn $!validity_meta_table_column;
 	has gpointer           $!_gda_reserved1            ;
@@ -925,7 +922,7 @@ class GdaMetaDbObject is repr<CStruct>is export {
 }
 
 class GdaSqlSelectField is repr<CStruct> is export {
-	has GdaSqlAnyPart      $!any                       ;
+	HAS GdaSqlAnyPart      $!any                       ;
 	has GdaSqlExpr         $!expr                      ;
 	has Str                $!field_name                ;
 	has Str                $!table_name                ;
@@ -937,7 +934,7 @@ class GdaSqlSelectField is repr<CStruct> is export {
 }
 
 class GdaSqlSelectFrom is repr<CStruct> is export {
-	has GdaSqlAnyPart $!any           ;
+	HAS GdaSqlAnyPart $!any           ;
 	has GSList        $!targets       ;
 	has GSList        $!joins         ;
 	has gpointer      $!_gda_reserved1;
@@ -945,7 +942,7 @@ class GdaSqlSelectFrom is repr<CStruct> is export {
 }
 
 class GdaSqlSelectJoin is repr<CStruct> is export {
-	has GdaSqlAnyPart        $!any           ;
+	HAS GdaSqlAnyPart        $!any           ;
 	has GdaSqlSelectJoinType $!type          ;
 	has gint                 $!position      ;
 	has GdaSqlExpr           $!expr          ;
@@ -955,7 +952,7 @@ class GdaSqlSelectJoin is repr<CStruct> is export {
 }
 
 class GdaSqlSelectOrder is repr<CStruct> is export {
-	has GdaSqlAnyPart $!any           ;
+	HAS GdaSqlAnyPart $!any           ;
 	has GdaSqlExpr    $!expr          ;
 	has gboolean      $!asc           ;
 	has Str           $!collation_name;
@@ -964,7 +961,7 @@ class GdaSqlSelectOrder is repr<CStruct> is export {
 }
 
 class GdaSqlSelectTarget is repr<CStruct> is export {
-	has GdaSqlAnyPart   $!any                 ;
+	HAS GdaSqlAnyPart   $!any                 ;
 	has GdaSqlExpr      $!expr                ;
 	has Str             $!table_name          ;
 	has Str             $!as                  ;
@@ -974,7 +971,7 @@ class GdaSqlSelectTarget is repr<CStruct> is export {
 }
 
 class GdaSqlStatementCompound is repr<CStruct> is export {
-	has GdaSqlAnyPart               $!any           ;
+	HAS GdaSqlAnyPart               $!any           ;
 	has GdaSqlStatementCompoundType $!compound_type ;
 	has GSList                      $!stmt_list     ;
 	has gpointer                    $!_gda_reserved1;
@@ -982,7 +979,7 @@ class GdaSqlStatementCompound is repr<CStruct> is export {
 }
 
 class GdaSqlTable is repr<CStruct> is export {
-	has GdaSqlAnyPart   $!any                 ;
+	HAS GdaSqlAnyPart   $!any                 ;
 	has Str             $!table_name          ;
 	has GdaMetaDbObject $!validity_meta_object;
 	has gpointer        $!_gda_reserved1      ;
@@ -990,7 +987,7 @@ class GdaSqlTable is repr<CStruct> is export {
 }
 
 class GdaSqlStatementDelete is repr<CStruct> is export {
-	has GdaSqlAnyPart $!any           ;
+	HAS GdaSqlAnyPart $!any           ;
 	has GdaSqlTable   $!table         ;
 	has GdaSqlExpr    $!cond          ;
 	has gpointer      $!_gda_reserved1;
@@ -998,7 +995,7 @@ class GdaSqlStatementDelete is repr<CStruct> is export {
 }
 
 class GdaSqlStatementInsert is repr<CStruct> is export {
-	has GdaSqlAnyPart $!any           ;
+	HAS GdaSqlAnyPart $!any           ;
 	has Str           $!on_conflict   ;
 	has GdaSqlTable   $!table         ;
 	has GSList        $!fields_list   ;
@@ -1009,7 +1006,7 @@ class GdaSqlStatementInsert is repr<CStruct> is export {
 }
 
 class GdaSqlStatementSelect is repr<CStruct> is export {
-	has GdaSqlAnyPart    $!any           ;
+	HAS GdaSqlAnyPart    $!any           ;
 	has gboolean         $!distinct      ;
 	has GdaSqlExpr       $!distinct_expr ;
 	has GSList           $!expr_list     ;
@@ -1025,7 +1022,7 @@ class GdaSqlStatementSelect is repr<CStruct> is export {
 }
 
 class GdaSqlStatementTransaction is repr<CStruct> is export {
-	has GdaSqlAnyPart           $!any            ;
+	HAS GdaSqlAnyPart           $!any            ;
 	has GdaTransactionIsolation $!isolation_level;
 	has Str                     $!trans_mode     ;
 	has Str                     $!trans_name     ;
@@ -1034,14 +1031,14 @@ class GdaSqlStatementTransaction is repr<CStruct> is export {
 }
 
 class GdaSqlStatementUnknown is repr<CStruct> is export {
-	has GdaSqlAnyPart $!any           ;
+	HAS GdaSqlAnyPart $!any           ;
 	has GSList        $!expressions   ;
 	has gpointer      $!_gda_reserved1;
 	has gpointer      $!_gda_reserved2;
 }
 
 class GdaSqlStatementUpdate is repr<CStruct> is export {
-	has GdaSqlAnyPart $!any           ;
+	HAS GdaSqlAnyPart $!any           ;
 	has Str           $!on_conflict   ;
 	has GdaSqlTable   $!table         ;
 	has GSList        $!fields_list   ;
@@ -1052,16 +1049,16 @@ class GdaSqlStatementUpdate is repr<CStruct> is export {
 }
 
 class GdaSqliteProvider is repr<CStruct> is export {
-	has GdaServerProvider $!provider;
+	HAS GdaServerProvider $!provider;
 }
 
 class GdaStatement is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaThreadWrapper is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
@@ -1199,7 +1196,7 @@ class GdaTimestamp is repr<CStruct> is export {
 }
 
 class GdaTransactionStatus is repr<CStruct> is export {
-	has GObject                   $!object         ;
+	HAS GObject                   $!object         ;
 	has Str                       $!name           ;
 	has GdaTransactionIsolation   $!isolation_level;
 	has GdaTransactionStatusState $!state          ;
@@ -1209,17 +1206,17 @@ class GdaTransactionStatus is repr<CStruct> is export {
 }
 
 class GdaTree is repr<CStruct> is export {
-	has GObject        $!object;
+	HAS GObject        $!object;
 	has gpointer  $!priv  ;
 }
 
 class GdaTreeManager is repr<CStruct> is export {
-	has GObject               $!object;
+	HAS GObject               $!object;
 	has gpointer              $!priv  ;
 }
 
 class GdaTreeMgrColumns is repr<CStruct> is export {
-	has GdaTreeManager        $!object;
+	HAS GdaTreeManager        $!object;
 	has gpointer              $!priv  ;
 }
 
@@ -1228,7 +1225,7 @@ class GdaTreeMgrColumns is repr<CStruct> is export {
 # }
 
 class GdaTreeMgrLabel is repr<CStruct> is export {
-	has GdaTreeManager      $!object;
+	HAS GdaTreeManager      $!object;
 	has gpointer            $!priv  ;
 }
 
@@ -1237,7 +1234,7 @@ class GdaTreeMgrLabel is repr<CStruct> is export {
 # }
 
 class GdaTreeMgrSchemas is repr<CStruct> is export {
-	has GdaTreeManager  $!object;
+	HAS GdaTreeManager  $!object;
 	has gpointer        $!priv  ;
 }
 
@@ -1246,7 +1243,7 @@ class GdaTreeMgrSchemas is repr<CStruct> is export {
 # }
 
 class GdaTreeMgrSelect is repr<CStruct> is export {
-	has GdaTreeManager $!object;
+	HAS GdaTreeManager $!object;
 	has gpointer       $!priv  ;
 }
 
@@ -1255,7 +1252,7 @@ class GdaTreeMgrSelect is repr<CStruct> is export {
 # }
 
 class GdaTreeMgrTables is repr<CStruct> is export {
-	has GdaTreeManager $!object;
+	HAS GdaTreeManager $!object;
 	has gpointer       $!priv  ;
 }
 
@@ -1264,23 +1261,23 @@ class GdaTreeMgrTables is repr<CStruct> is export {
 # }
 
 class GdaTreeNode is repr<CStruct> is export {
-	has GObject   $!object;
+	HAS GObject   $!object;
 	has gpointer  $!priv  ;
 }
 
 
 class GdaVirtualConnection is repr<CStruct> is export {
-	has GdaConnection $!connection;
+	HAS GdaConnection $!connection;
 	has gpointer      $!priv      ;
 }
 
 class GdaVconnectionDataModel is repr<CStruct> is export {
-	has GdaVirtualConnection $!connection;
+	HAS GdaVirtualConnection $!connection;
 	has gpointer             $!priv      ;
 }
 
 class GdaVconnectionDataModelSpec is repr<CStruct> is export {
-	has GdaDataModel $!data_model                ;
+	HAS GdaDataModel $!data_model                ;
 	has gpointer     $!create_columns_func       ; #= GdaVconnectionDataModelCreateColumnsFunc
   has gpointer     $!create_filter_func        ; #= GdaVconnectionDataModelParseFilterFunc
 	has gpointer     $!create_model_func         ; #= GdaVconnectionDataModelCreateModelFunc
@@ -1288,7 +1285,7 @@ class GdaVconnectionDataModelSpec is repr<CStruct> is export {
 }
 
 class GdaVconnectionHub is repr<CStruct> is export {
-	has GdaVconnectionDataModel  $!parent;
+	HAS GdaVconnectionDataModel  $!parent;
 	has gpointer                 $!priv  ;
 }
 
@@ -1300,12 +1297,18 @@ class GdaVirtualConstraint is repr<CStruct>
 	has GdaSqlOperatorType $!op     ;
 }
 
-class GdaVirtualConstraintUsage is repr<CStruct> is export {
+class GdaVirtualConstraintUsage is repr<CStruct>
+  is   export
+  does StructSkipsTest['internal struct']
+{
 	has int      $!argvIndex;
 	has gboolean $!omit     ;
 }
 
-class GdaVirtualOrderby is repr<CStruct> is export {
+class GdaVirtualOrderby is repr<CStruct>
+  is   export
+  does StructSkipsTest['internal struct']
+{
 	has int      $!iColumn;
 	has gboolean $!desc   ;
 }
@@ -1319,17 +1322,17 @@ class GdaVirtualProvider is repr<CStruct>
 };
 
 class GdaVproviderDataModel is repr<CStruct> is export {
-	has GdaVirtualProvider     $!vprovider;
+	HAS GdaVirtualProvider     $!vprovider;
 	has gpointer               $!priv     ;
 }
 
 class GdaVproviderHub is repr<CStruct> is export {
-	has GdaVproviderDataModel  $!parent;
+	HAS GdaVproviderDataModel  $!parent;
 	has gpointer               $!priv  ;
 }
 
 class GdaXaTransaction is repr<CStruct> is export {
-	has GObject                $!object;
+	HAS GObject                $!object;
 	has gpointer               $!priv  ;
 }
 
