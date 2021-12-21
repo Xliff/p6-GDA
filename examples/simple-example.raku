@@ -111,13 +111,11 @@ sub delete-data ($cnc) {
 sub update-data ($cnc) {
   my $res = $cnc.update-row-in-table(
     'products',
-    'ref',
-    gv_str('p1000'),
+    ( ref => gv_str('p1000') ),
     gerror,
     name  => gv_str('flowers'),
     price => gv_flt(1.99)
   );
-  say 'Done updating';
 
   unless $res {
     $*ERR.say: "Could not UPDATE data in the 'products' table: {
