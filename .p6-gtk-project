@@ -5,3 +5,4 @@ call_prefix=gda_
 include-directory=/usr/include/libgda-5.0
 backups=backup,bitbucket,google-backup,azure-backup,hut
 build_exclude=
+struct-prefix=Gda
