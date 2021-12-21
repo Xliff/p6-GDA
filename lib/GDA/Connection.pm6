@@ -1164,50 +1164,53 @@ class GDA::Connection {
   { * }
 
 
-  # multi method update_row_in_table (
-  #   Str()                   $table,
-  #   Pair                    $condition_column,
-  #   CArray[Pointer[GError]] $error                   = gerror,
-  #                           %col_name_values         = ().Hash
-  # ) {
-  #   samewith(
-  #     $table,
-  #     $condition_column.key,
-  #     $condition_column.value,
-  #     $error,
-  #     |%col_name_values
-  #   );
-  # }
-  # multi method update_row_in_table (
-  #   Str()                    $table,
-  #   Pair                     $condition_column,
-  #   CArray[Pointer[GError]]  $error                   = gerror,
-  #                           *%col_name_values
-  # ) {
-  #   samewith(
-  #     $table,
-  #     $condition_column.key,
-  #     $condition_column.value,
-  #     $error,
-  #     %col_name_values.keys,
-  #     %col_name_values.values
-  #   )
-  # }
-  # multi method update_row_in_table (
-  #   Str()                   $table,
-  #   Str()                   $condition_column_name,
-  #   GValue()                $condition_value,
-  #   CArray[Pointer[GError]] $error                   = gerror,
-  #                           %col_name_values         = ().Hash
-  # ) {
-  #   samewith(
-  #     $table,
-  #     $condition_column_name,
-  #     $condition_value,
-  #     $error
-  #     |%col_name_values
-  #   );
-  # }
+  multi method update_row_in_table (
+    Str()                   $table,
+    Pair()                  $condition_column,
+                            %col_name_values,
+    CArray[Pointer[GError]] $error                   = gerror,
+  ) {
+    say "URIT: k: { $condition_column.key } / v: { $condition_column.value }";
+    %col_name_values.gist.say;
+    samewith(
+      $table,
+      $condition_column.key,
+      $condition_column.value,
+      $error,
+      |%col_name_values
+    );
+  }
+  multi method update_row_in_table (
+    Str()                    $table,
+    Pair()                   $condition_column,
+    CArray[Pointer[GError]]  $error                   = gerror,
+                            *%col_name_values
+  ) {
+    say "URIT: k: { $condition_column.key } / v: { $condition_column.value }";
+    %col_name_values.gist.say;
+    samewith(
+      $table,
+      $condition_column.key,
+      $condition_column.value,
+      $error,
+      |%col_name_values
+    );
+  }
+  multi method update_row_in_table (
+    Str()                   $table,
+    Str()                   $condition_column_name,
+    GValue()                $condition_value,
+                            %col_name_values,
+    CArray[Pointer[GError]] $error                   = gerror,
+  ) {
+    samewith(
+      $table,
+      $condition_column_name,
+      $condition_value,
+      $error
+      |%col_name_values
+    );
+  }
   multi method update_row_in_table (
     Str()                   $table,
     Str()                   $condition_column_name,
