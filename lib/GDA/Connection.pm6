@@ -136,14 +136,24 @@ class GDA::Connection {
     $gda-connection ?? self.bless( :$gda-connection ) !! Nil;
   }
 
-  method open_from_dsn (
+  proto method open_from_dsn (|)
+    is also<open-from-dsn>
+  { * }
+
+  multi method open_from_dsn (
+    Str()                    $dsn,
+    CArray[Pointer[GError]]  $error       = gerror,
+    Str()                   :$auth_string = Str,
+    Int()                   :$options     = GDA_CONNECTION_OPTIONS_NONE
+  ) {
+    samewith($dsn, $auth_string, $options, $error);
+  }
+  multi method open_from_dsn (
     Str()                   $dsn,
     Str()                   $auth_string,
     Int()                   $options,
     CArray[Pointer[GError]] $error        = gerror
-  )
-    is also<open-from-dsn>
-  {
+  ) {
     my GdaConnectionOptions $o = $options;
 
     clear_error;
