@@ -47,6 +47,9 @@ class GDA::Report::Engine {
     is also<GdaReportEngine>
   { $!gre }
 
+  proto method new (|)
+  { * } 
+
   multi method new (GdaReportEngineAncestry $gda-report-engine, :$ref = True) {
     return Nil unless $gda-report-engine;
 
