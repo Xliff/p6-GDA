@@ -7,6 +7,7 @@ use NativeCall;
 use GDA::Raw::Types;
 
 use GLib::Value;
+use GDA::Report::Engine;
 
 use GLib::Roles::Object;
 
@@ -74,17 +75,17 @@ class GDA::Report::Document {
     Proxy.new(
       FETCH => -> $ {
         $gv = GLib::Value.new(
-          self.prop_get('template', $gv)
+          self.prop_get('engine', $gv)
         );
         propReturnObject(
           $gv.object,
           $raw,
-          GDA::Report::Engine.getTypePair
+          |GDA::Report::Engine.getTypePair
         );
       },
       STORE => -> $, GdaReportEngine() $val is copy {
         $gv.object = $val;
-        self.prop_set('template', $gv);
+        self.prop_set('engine', $gv);
       }
     );
   }
