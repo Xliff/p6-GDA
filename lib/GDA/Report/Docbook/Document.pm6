@@ -11,7 +11,7 @@ use GDA::Report::Document;
 our subset GdaReportDocbookDocumentAncestry is export of Mu
   where GdaReportDocbookDocument | GdaReportDocumentAncestry;
 
-class GDA::Report::Document::Docbook is GDA::Report::Document {
+class GDA::Report::Docbook::Document is GDA::Report::Document {
   has GdaReportDocbookDocument $!grdd is implementor;
 
   submethod BUILD ( :$gda-docbook-document ) {
@@ -50,10 +50,10 @@ class GDA::Report::Document::Docbook is GDA::Report::Document {
     $o.ref if $ref;
     $o;
   }
-  multi method new (GdaReportEngine() $engine) {
-    my $gda-dockbook-document = gda_report_docbook_document_new($engine);
+  multi method new (GdaReportEngine() $engine = GdaReportEngine) {
+    my $gda-docbook-document = gda_report_docbook_document_new($engine);
 
-    $gda-dockbook-document ?? self.bless( :$gda-dockbook-document ) !! Nil;
+    $gda-docbook-document ?? self.bless( :$gda-docbook-document ) !! Nil;
   }
 
   # Type: gchar
