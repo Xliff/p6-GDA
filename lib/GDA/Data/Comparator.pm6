@@ -14,6 +14,8 @@ our subset GdaDataComparatorAncestry is export of Mu
 
 class GDA::Data::Comparator {
   also does GLib::Roles::Object;
+  also does Positional;
+  also does Iterable;
 
   has GdaDataComparator $!gdc;
 
@@ -127,7 +129,12 @@ class GDA::Data::Comparator {
     );
   }
 
-  method get_n_diffs is also<get-n-diffs> {
+  method get_n_diffs
+    is also<
+      get-n-diffs
+      elems
+    >
+  {
     gda_data_comparator_get_n_diffs($!gdc);
   }
 
@@ -151,6 +158,27 @@ class GDA::Data::Comparator {
     my gint $nbc =$nb_cols;
 
     gda_data_comparator_set_key_columns($!gdc, $col_numbers, $nbc);
+  }
+
+  # Role: Positional
+  method AT-POS (Int() \k) {
+    return Nil unless k < self.elems;
+
+    self.get_diff(k);
+  }
+
+  # Role: Iterable
+  method iterator {
+    my $self = self;
+
+    (class :: does Iterator {
+      has $!i = 0;
+
+      method pull-one {
+        my $v = $self.get_diff($!i++);
+        $!i <= $self.elems ?? $v !! IterationEnd;
+      }
+    }).new
   }
 
 }
