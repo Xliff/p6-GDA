@@ -45,6 +45,7 @@ s(GdaDataModelIter);
 s(GdaDataPivot);
 s(GdaDataProxy);
 s(GdaDataSelect);
+s(GdaDiff);
 s(GdaDsnInfo);
 s(GdaGeometricPoint);
 s(GdaHandlerBin);

@@ -206,6 +206,13 @@ class GdaDataModelImport is repr<CStruct> is export {
 	has gpointer            $!priv  ;
 }
 
+class GdaDiff is repr<CStruct> is export {
+  has GdaDiffType $.type;
+  has gint        $.old_row;
+  has gint        $.new_row;
+  has GHashTable  $!values;  #= key = ('+' or '-') and a column position starting at 0 (string)\nvalue = a GValue pointer
+}
+
 class GdaSet is repr<CStruct> is export {
 	HAS GObject       $!object      ;
 	has gpointer      $!priv        ;
