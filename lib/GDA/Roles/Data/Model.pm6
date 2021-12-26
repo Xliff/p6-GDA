@@ -5,6 +5,7 @@ use Method::Also;
 
 use GDA::Raw::Types;
 use GDA::Raw::Data::Model;
+use LibXML::Raw;
 
 use GLib::HashTable;
 use GDA::Set;
@@ -86,6 +87,19 @@ role GDA::Roles::Data::Model {
   # GdaDataModel *model,  gint row --> void
   method row-updated is also<row_updated> {
     self.connect-model-row($!gdm, 'row-updated');
+  }
+
+  method add_data_from_xml_node (
+    GdaDataModel()          $model,
+    anyNode()               $node,
+    CArray[Pointer[GError]] $error  = gerror
+  )
+    is also<add-data-from-xml-node>
+  {
+    clear_error;
+    my $rv = so gda_data_model_add_data_from_xml_node ($model, $node, $error);
+    set_error($error);
+    $rv;
   }
 
   method append_row (CArray[Pointer[GError]] $error = gerror)

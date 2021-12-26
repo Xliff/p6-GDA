@@ -2,6 +2,8 @@ use v6.c;
 
 use NativeCall;
 
+use LibXML::Raw;
+
 use GLib::Raw::Definitions;
 use GLib::Raw::Structs;
 use GDA::Raw::Definitions;
@@ -231,7 +233,7 @@ sub gda_data_model_import_from_string (
   is native(gda)
   is export
 { * }
- 
+
 sub gda_data_model_iter_at_row (
   GdaDataModel     $model,
   GdaDataModelIter $iter,
@@ -335,6 +337,17 @@ sub gda_data_model_set_values (
 { * }
 
 sub gda_data_model_thaw (GdaDataModel $model)
+  is native(gda)
+  is export
+{ * }
+
+### /usr/include/libgda-5.0/libgda/gda-data-model-private.h
+
+sub gda_data_model_add_data_from_xml_node (
+  GdaDataModel            $model,
+  anyNode                 $node,
+  CArray[Pointer[GError]] $error
+)
   is native(gda)
   is export
 { * }
