@@ -7,7 +7,7 @@ use NativeCall;
 use GDA::Raw::Types;
 use GDA::Raw::Server::Provider;
 
-#use GDA::Server::Operation;
+use GDA::Server::Operation;
 
 use GLib::Roles::Object;
 
