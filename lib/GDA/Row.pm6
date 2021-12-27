@@ -16,8 +16,7 @@ class GDA::Row {
   has GdaRow $!gr;
 
   submethod BUILD ( :$gda-row ) {
-    self.setGdaRow($gda-row)
-      if $gda-row;
+    self.setGdaRow($gda-row) if $gda-row;
   }
 
   method setGdaRow (GdaRowAncestry $_) {
