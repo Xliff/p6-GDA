@@ -1,7 +1,13 @@
 use v6.c;
 
+use Method::Also;
+
+use NativeCall;
+
 use GDA::Raw::Types;
 use GDA::Raw::Data::Select;
+
+use GLib::Roles::Object;
 
 our subset GdaDataSelectAncestry is export of Mu
   where GdaDataSelect | GObject;
@@ -44,7 +50,7 @@ class GDA::Data::Select {
   }
 
   # Type: gboolean
-  method auto-reset is rw  {
+  method auto-reset is rw  is also<auto_reset> {
     my $gv = GLib::Value.new( G_TYPE_BOOLEAN );
     Proxy.new(
       FETCH => sub ($) {
@@ -81,7 +87,7 @@ class GDA::Data::Select {
   }
 
   # Type: GdaStatement
-  method delete-stmt ( :$raw = False ) is rw  {
+  method delete-stmt ( :$raw = False ) is rw  is also<delete_stmt> {
     my $gv = GLib::Value.new( GDA::Statement.get_type );
     Proxy.new(
       FETCH => sub ($) {
@@ -102,7 +108,7 @@ class GDA::Data::Select {
   }
 
   # Type: GdaDataSelect
-  method exec-params is rw  {
+  method exec-params ( :$raw = False ) is rw  is also<exec_params> {
     my $gv = GLib::Value.new( GDA::Set.get_type );
     Proxy.new(
       FETCH => sub ($) {
@@ -122,7 +128,7 @@ class GDA::Data::Select {
   }
 
   # Type: gdouble
-  method execution-delay is rw  {
+  method execution-delay is rw  is also<execution_delay> {
     my $gv = GLib::Value.new( G_TYPE_DOUBLE );
     Proxy.new(
       FETCH => sub ($) {
@@ -139,7 +145,7 @@ class GDA::Data::Select {
   }
 
   # Type: GdaStatement
-  method insert-stmt is rw  {
+  method insert-stmt ( :$raw = False) is rw  is also<insert_stmt> {
     my $gv = GLib::Value.new( GDA::Statement.get_type );
     Proxy.new(
       FETCH => sub ($) {
@@ -160,7 +166,7 @@ class GDA::Data::Select {
   }
 
   # Type: guint
-  method model-usage is rw  {
+  method model-usage is rw  is also<model_usage> {
     my $gv = GLib::Value.new( G_TYPE_UINT );
     Proxy.new(
       FETCH => sub ($) {
@@ -176,7 +182,7 @@ class GDA::Data::Select {
   }
 
   # Type: GdaPStmt
-  method prepared-stmt ( :$raw = False ) is rw  {
+  method prepared-stmt ( :$raw = False ) is rw  is also<prepared_stmt> {
     my $gv = GLib::Value.new( GDA::PStmt.get_type );
     Proxy.new(
       FETCH => -> $ {
@@ -197,7 +203,7 @@ class GDA::Data::Select {
   }
 
   # Type: GdaStatement
-  method select-stmt is rw  {
+  method select-stmt ( :$raw = False ) is rw  is also<select_stmt> {
     my $gv = GLib::Value.new( GDA::Statement.get_type );
     Proxy.new(
       FETCH => -> $ {
@@ -217,7 +223,7 @@ class GDA::Data::Select {
   }
 
   # Type: gboolean
-  method store-all-rows is rw  {
+  method store-all-rows is rw  is also<store_all_rows> {
     my $gv = GLib::Value.new( G_TYPE_BOOLEAN );
     Proxy.new(
       FETCH => sub ($) {
@@ -234,7 +240,7 @@ class GDA::Data::Select {
   }
 
   # Type: GdaStatement
-  method update-stmt ( :$raw = False ) is rw  {
+  method update-stmt ( :$raw = False ) is rw  is also<update_stmt> {
     my $gv = GLib::Value.new( GDA::Statement.get_type );
     Proxy.new(
       FETCH => sub ($) {
@@ -254,7 +260,9 @@ class GDA::Data::Select {
     );
   }
 
-  method compute_columns_attributes (CArray[Pointer[GError]] $error = gerror) {
+  method compute_columns_attributes (CArray[Pointer[GError]] $error = gerror)
+    is also<compute-columns-attributes>
+  {
     clear_error;
     my $rv = so gda_data_select_compute_columns_attributes($!gds, $error);
     set_error($error);
@@ -263,7 +271,9 @@ class GDA::Data::Select {
 
   method compute_modification_statements (
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<compute-modification-statements>
+  {
     clear_error;
     my $rv = so gda_data_select_compute_modification_statements($!gds, $error);
     set_error($error);
@@ -273,8 +283,10 @@ class GDA::Data::Select {
   method compute_modification_statements_ext (
     Int()                   $cond_type,
     CArray[Pointer[GError]] $error      = gerror
-  ) {
-    my GdaDataSelectConditionType $c = $cont_type;
+  )
+    is also<compute-modification-statements-ext>
+  {
+    my GdaDataSelectConditionType $c = $cond_type;
 
     clear_error;
     my $rv = so gda_data_select_compute_modification_statements_ext(
@@ -286,15 +298,17 @@ class GDA::Data::Select {
     $rv;
   }
 
-  method compute_row_selection_condition (CArray[Pointer[GError]] $error) {
+  method compute_row_selection_condition (CArray[Pointer[GError]] $error)
+    is also<compute-row-selection-condition>
+  {
     gda_data_select_compute_row_selection_condition($!gds, $error);
   }
 
-  method error_quark ( GDA::Data::Select:U: ) {
-    gda_data_select_error_quark($!gds);
+  method error_quark ( GDA::Data::Select:U: ) is also<error-quark> {
+    gda_data_select_error_quark();
   }
 
-  method get_connection (:$raw = False) {
+  method get_connection (:$raw = False) is also<get-connection> {
     propReturnObject(
       gda_data_select_get_connection($!gds),
       $raw,
@@ -302,13 +316,15 @@ class GDA::Data::Select {
     );
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gda_data_select_get_type, $n, $t );
   }
 
-  method prepare_for_offline (CArray[Pointer[GError]] $error = gerror) {
+  method prepare_for_offline (CArray[Pointer[GError]] $error = gerror)
+    is also<prepare-for-offline>
+  {
     clear_error;
     my $rv = so gda_data_select_prepare_for_offline($!gds, $error);
     set_error($error);
@@ -325,7 +341,9 @@ class GDA::Data::Select {
   method set_modification_statement (
     GdaStatement()          $mod_stmt,
     CArray[Pointer[GError]] $error     = gerror
-  ) {
+  )
+    is also<set-modification-statement>
+  {
     clear_error;
     my $rv = so gda_data_select_set_modification_statement(
       $!gds,
@@ -339,7 +357,9 @@ class GDA::Data::Select {
   method set_modification_statement_sql (
     Str()                   $sql,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<set-modification-statement-sql>
+  {
     clear_error;
     my $rv = so gda_data_select_set_modification_statement_sql(
       $!gds,
@@ -353,9 +373,15 @@ class GDA::Data::Select {
   method set_row_selection_condition (
     GdaSqlExpr()            $expr,
     CArray[Pointer[GError]] $error = gerror
-  ) {
+  )
+    is also<set-row-selection-condition>
+  {
     clear_error;
-    my $rv = so gda_data_select_set_row_selection_condition($!gds, $expr, $error);
+    my $rv = so gda_data_select_set_row_selection_condition(
+      $!gds,
+      $expr,
+      $error
+    );
     set_error($error);
     $rv;
   }
@@ -363,8 +389,10 @@ class GDA::Data::Select {
   method set_row_selection_condition_sql (
     Str()                   $sql_where,
     CArray[Pointer[GError]] $error      = gerror
-  ) {
-    clear_erorr;
+  )
+    is also<set-row-selection-condition-sql>
+  {
+    clear_error;
     my $rv = so gda_data_select_set_row_selection_condition_sql(
       $!gds,
       $sql_where,
