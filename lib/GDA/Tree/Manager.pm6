@@ -6,7 +6,7 @@ use GDA::Raw::Types;
 use GDA::Raw::Tree::Manager;
 
 use GLib::GList;
-#use GDA::Tree::Node;
+use GDA::Tree::Node;
 
 use GLib::Roles::Object;
 
@@ -19,27 +19,27 @@ class GDA::Tree::Manager {
   has GdaTreeManager $!gtm;
 
   submethod BUILD ( :$gda-tree-manager ) {
-    self.setGdaTreeNode($gda-tree-manager) if $gda-tree-manager;
+    self.setGdaTreeManager($gda-tree-manager) if $gda-tree-manager;
   }
 
-  method setGdaTreeNode (GdaTreeManagerAncestry $_) {
+  method setGdaTreeManager (GdaTreeManagerAncestry $_) {
     my $to-parent;
     $!gtm = do {
-      when GdaTreeNode {
+      when GdaTreeManager {
         $to-parent = cast(GObject, $_);
         $_;
       }
 
       default {
         $to-parent = $_;
-        cast(GdaTreeNode, $_);
+        cast(GdaTreeManager, $_);
       }
     }
     self!setObject($to-parent);
   }
 
-  method GDA::Raw::Definition::GdaTreeNode
-    is also<GdaTreeNode>
+  method GDA::Raw::Definition::GdaTreeManager
+    is also<GdaTreeManager>
   { $!gtm }
 
   method new_with_func ( &update_func )
