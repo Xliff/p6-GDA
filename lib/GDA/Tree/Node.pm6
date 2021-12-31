@@ -9,13 +9,47 @@ use GLib::GList;
 use GLib::Roles::Object;
 use GDA::Roles::Signals::Tree::Node;
 
+our subset GdaTreeNodeAncestry is export of Mu
+  where GdaTreeNode | GObject;
+
 class GDA::Tree::Node {
   also does GLib::Roles::Object;
   also does GDA::Roles::Signals::Tree::Node;
 
   has GdaTreeNode $!gtn;
 
-  method new (Str() $name) {
+  submethod BUILD ( :$gda-tree-node ) {
+    self.setGdaTreeNode($gda-tree-node) if $gda-tree-node;
+  }
+
+  method setGdaTreeNode (GdaTreeNodeAncestry $_) {
+    my $to-parent;
+    $!gtn = do {
+      when GdaTreeNode {
+        $to-parent = cast(GObject, $_);
+        $_;
+      }
+
+      default {
+        $to-parent = $_;
+        cast(GdaTreeNode, $_);
+      }
+    }
+    self!setObject($to-parent);
+  }
+
+  method GDA::Raw::Definition::GdaTreeNode
+    is also<GdaTreeNode>
+  { $!gtn }
+
+  multi method new (GdaTreeNodeAncestry $gda-tree-node, :$ref = True) {
+    return Nil unless $gda-tree-node;
+
+    my $o = self.bless( :$gda-tree-node );
+    $o.ref if $ref;
+    $o;
+  }
+  multi method new (Str() $name) {
     my $gda-tree-node = gda_tree_node_new($name);
 
     $gda-tree-node ?? self.bless( :$gda-tree-node ) !! Nil;
