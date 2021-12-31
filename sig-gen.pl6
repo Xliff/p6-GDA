@@ -5,6 +5,10 @@ use LWP::Simple;
 #use Mojo::DOM:from<Perl5>;
 use DOM::Tiny;
 
+use lib <scripts .>;
+
+use GTKScripts;
+
 my @defined-sigs = (
   [ 'gpointer',        'void', 'connect'       ],
   [ 'guint, gpointer', 'void', 'connect-uint'  ],
@@ -20,6 +24,10 @@ sub MAIN (
   # If it's a URL, then try to pick it apart
   my ($ext, $v) = ('', "\$\!{ $var }");
   my %signals;
+
+  $control = "{ %config<include-directory> //
+               '/usr/include/gtk-3.0/gtk' }/{ $control }"
+    unless $control.starts-with('http:' | 'https:' | '/');
 
   sub trimIt ($_) {
     .Str.subst("\n", ' ', :g).subst(/\s+/, ' ', :g)
@@ -78,15 +86,31 @@ sub MAIN (
     # 1) Read in the .c file for the signal names
     my @signals;
     my $matches = $control-io.slurp ~~ m:g/
-      'g_signal_new' \s* '('\s* <["]> (<[\-\_\w]>+)
+      'g_signal_new' \s* '('\s* '"' (<[\-\_\w]>+) '"' \s* ',' \s*
+      [
+        .+?','\s*
+        .+?','\s*
+        'G_STRUCT_OFFSET' \s* '(' \w+ ',' \s* (<[\w\-\+]>+)
+      ]
     /;
 
-    @signals.push: .[0].Str for $matches[];
+    $matches.gist.say;
+    my %proper-sig-name;
+    for $matches[] {
+      %proper-sig-name{ .[0] } = .[0].Str;
+      @signals.push: .[0].Str;
+      if .[1] {
+        @signals.push: .[1].Str;
+        %proper-sig-name{ .[1] } = .[0].Str;
+      }
+    }
 
     # 2) Read in the .h file for the signal signatures
     my $header = $control-io.absolute.subst('.c', '') ~ '.h';
     die "Could not find header '{ $header }' file for signatures!"
       unless $header.IO.r;
+
+      @signals.push;
 
     my $signature-matches = $header.IO.slurp ~~ m:g/
       $<rt>=[(\w+) \s* '*'?] '(*' \s*
@@ -95,7 +119,7 @@ sub MAIN (
       '(' $<sig>=( <-[\)]>+ ) ')'
     /;
 
-    $signature-matches.gist.say;
+    say "SM: { $signature-matches.gist }";
 
     for $signature-matches[] {
       .gist.say;
@@ -104,7 +128,7 @@ sub MAIN (
         .subst('const ', '').subst('gchar', 'Str', :g)
       });
       my $udm = $s-sig.elems == 2 && $s-sig.tail.contains('void');
-      my $signal-name = .<signal>.Str;
+      my $signal-name = %proper-sig-name{ .<signal> };
       %signals{ $signal-name } = my %sig-data = (
         :$udm,
         # cw: This back and forth is hard to avoid.
@@ -114,6 +138,9 @@ sub MAIN (
         rt    => .<rt>.&trimIt,
       ).Hash;
     }
+  } else {
+    say "Don't know how to handle '{ $control }'";
+    exit 1;
   }
 
   # Output in-class handlers
