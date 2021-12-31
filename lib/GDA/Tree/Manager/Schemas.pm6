@@ -35,7 +35,7 @@ class GDA::Tree::Manager::Schemas is GDA::Tree::Manager {
     self.setGdaTreeManager($to-parent);
   }
 
-  method GDA::Raw::Definition::GdaTreeMgrSchemaws
+  method GDA::Raw::Definition::GdaTreeMgrSchemas
     is also<GdaTreeMgrSchemas>
   { $!gtms }
 
