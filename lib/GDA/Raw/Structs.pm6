@@ -1236,6 +1236,11 @@ class GdaTreeMgrLabel is repr<CStruct> is export {
 	has gpointer            $!priv  ;
 }
 
+class GdaTreeMgrLdap is repr<CStruct> is export {
+  HAS GdaTreeManager      $!object;
+	has gpointer            $!priv  ;
+}
+
 # class GdaTreeMgrLabelClass is repr<CStruct> is export {
 # 	has GdaTreeManagerClass $!object_class;
 # }
