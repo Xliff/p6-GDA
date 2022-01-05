@@ -10,6 +10,19 @@ use GLib::Roles::Object;
 use GDA::Roles::Data::Model;
 use GDA::Roles::Signals::Holder;
 
+class X::GDA::Holder::InvalidType is Exception is export {
+  has $!bad-var is built;
+
+  method new ($bad-var) {
+    self.bless( :$bad-var )
+  }
+
+  method message {
+    "An invalid type of { $!bad-var.^name } was used."
+  }
+
+}
+
 our subset GdaHolderAncestry is export of Mu
   where GdaHolder | GObject;
 
@@ -53,6 +66,20 @@ class GDA::Holder {
   multi method new (Int() $type) {
     my GType $t          = $type;
     my       $gda-holder = gda_holder_new($t);
+
+    $gda-holder ?? self.bless( :$gda-holder ) !! Nil;
+  }
+
+  multi method new (Str() $id, $val) {
+    my $gda-holder = do given $val {
+      when Str  { gda_holder_new_inline_string(G_TYPE_STRING, $id, $val)       }
+      when Bool { gda_holder_new_inline_bool(G_TYPE_BOOLEAN, $id, $val.so.Int) }
+      when Int  { gda_holder_new_inline_int(G_TYPE_INT, $id, $val +& 0xfff)    }
+
+      default {
+        X::GDA::Holder::InvalidType.new($val).throw
+      }
+    }
 
     $gda-holder ?? self.bless( :$gda-holder ) !! Nil;
   }

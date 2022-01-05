@@ -128,11 +128,39 @@ sub gda_holder_new (GType $type)
   is export
 { * }
 
-sub gda_holder_new_inline (GType $type, Str $id)
+# cw: Varargs is out of scope!
+# sub gda_holder_new_inline (GType $type, Str $id, ...)
+#   returns GdaHolder
+#   is native(gda)
+#   is export
+# { * }
+
+multi sub gda_holder_new_inline_string (GType $type, Str $id, Str $val, Str)
   returns GdaHolder
   is native(gda)
   is export
+  is symbol('gda_holder_new_inline')
 { * }
+
+multi sub gda_holder_new_inline_bool (
+  GType    $type,
+  Str      $id,
+  gboolean $val,
+  Str
+)
+  returns GdaHolder
+  is native(gda)
+  is export
+  is symbol('gda_holder_new_inline')
+{ * }
+
+multi sub gda_holder_new_inline_int (GType $type, Str $id, gint $val, Str)
+  returns GdaHolder
+  is native(gda)
+  is export
+  is symbol('gda_holder_new_inline')
+{ * }
+
 
 sub gda_holder_set_attribute (
   GdaHolder      $holder,
