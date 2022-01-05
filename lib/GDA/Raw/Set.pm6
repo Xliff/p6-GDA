@@ -177,11 +177,12 @@ sub gda_set_new_from_spec_string (
   is export
 { * }
 
-sub gda_set_new_inline (gint $nb)
-  returns GdaSet
-  is native(gda)
-  is export
-{ * }
+# cw: Varargs not in scope!
+# sub gda_set_new_inline (gint $nb, ...)
+#   returns GdaSet
+#   is native(gda)
+#   is export
+# { * }
 
 sub gda_set_new_read_only (GSList $holders)
   returns GdaSet

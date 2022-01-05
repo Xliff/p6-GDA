@@ -18,6 +18,20 @@ class GDA::Set::Group  { ... }
 class GDA::Set::Node   { ... }
 class GDA::Set::Source { ... }
 
+class X::GDA::Set::InvalidHolder is Exception {
+  has $!bad-var is built;
+
+  method new ($bad-var) {
+    self.bless( :$bad-var );
+  }
+
+  method message {
+    "An invalid value of type {
+     $!bad-var.^name } was used in lieu of a GdaHolder"
+  }
+
+}
+
 our subset GdaSetAncestry is export of Mu
   where GdaSet | GObject;
 
@@ -58,16 +72,10 @@ class GDA::Set {
     $o.ref if $ref;
     $o;
   }
-  multi method new (GSList() $holders) {
-    my $gda-set = gda_set_new($holders);
+  multi method new (GdaHolder() $holder) {
+    my $gda-set = gda_set_new($holder);
 
     $gda-set ?? self.bless( :$gda-set ) !! Nil;
-  }
-  multi method new (@set) {
-    # @set contains a list of holders
-    # - Where each holder contains a GValue
-    # - Where each GValue contains a regular value
-    samewith( GLib::GSList.new(@set, typed => GdaHolder) )
   }
 
   method new_from_spec_node (
@@ -96,12 +104,55 @@ class GDA::Set {
     $gda-set ?? self.bless( :$gda-set ) !! Nil
   }
 
-  method new_inline (Int() $nb) is also<new-inline> {
-    my gint $nnb = $nb;
+  # cw: varargs is currently out of scope!
+  proto method new_inline (|)
+    is also<new-inline>
+  { * }
 
-    my $gda-set = gda_set_new_inline($!gs, $nnb);
+  multi method new_inline (*@holders) {
+    samewith(@holders);
+  }
+  multi method new_inline (@holders) {
+    my $gda-set = samewith(@holders.head);
 
-    $gda-set ?? self.bless( :$gda-set ) !! Nil;
+    my $rv;
+    for @holders.skip(1) -> $_ is copy {
+      my $h = do {
+        when Array {
+          $_ = GDA::Holder.new(|$_).GdaHolder;
+          proceed
+        }
+
+        when Pair  {
+          $_ = GDA::Holder.new( .key, .value ).GdaHolder;
+          proceed
+        }
+
+        when .^can('GdaHolder') {
+          $_ .= GdaHolder;
+          proceed
+        }
+
+        when GdaHolder { $_ }
+
+        default { X::GDA::Set::InvalidNode.new($_).throw }
+      }
+
+      unless $gda-set.add-holder($h) {
+        once {
+          set_error(
+            GError.new(
+              # cw: I guess I am reserving these for custom errors.
+              code    => 2 ** 32 - 1,
+              domain  => 2 ** 32 - 1,
+              message => 'A GdaHolder in this set had a duplicate ID!'
+            )
+          );
+        }
+      }
+    }
+
+    $gda-set;
   }
 
   # cw: Marked as private, but still a part of the public API. For now we
@@ -155,9 +206,7 @@ class GDA::Set {
   }
 
   method add_holder (GdaHolder() $holder) is also<add-holder> {
-    my $gda-set = gda_set_add_holder($!gs, $holder);
-
-    $gda-set ?? self.bless( :$gda-set ) !! Nil;
+    so gda_set_add_holder($!gs, $holder);
   }
 
   method copy ( :$raw = False ) {
