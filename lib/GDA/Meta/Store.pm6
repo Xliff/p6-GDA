@@ -64,6 +64,26 @@ class GDA::Meta::Store {
     $gda-meta-store ?? self.bless( :$gda-meta-store ) !! Nil;
   }
 
+  # Type: GdaConnection
+  method cnc ( :$raw = False ) is rw  {
+    my $gv = GLib::Value.new( GDA::Connection.get_type );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('cnc', $gv)
+        );
+        propReturnObject(
+          $gv.object,
+          $raw,
+          |GDA::Connection.getTypePair
+        );
+      },
+      STORE => -> $,  $val is copy {
+        warn 'cnc is a construct-only attribute'
+      }
+    );
+  }
+
   # Is originally:
   # GdaMetaStore, gpointer --> void
   method meta-reset {
