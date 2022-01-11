@@ -225,6 +225,13 @@ our enum GdaHolderErrorEnum is export <
   GDA_HOLDER_VALUE_NULL_ERROR
 >;
 
+our constant GdaLdapSearchScope is export := guint32;
+our enum GdaLdapSearchScopeEnum is export (
+  GDA_LDAP_SEARCH_BASE     => 1,
+  GDA_LDAP_SEARCH_ONELEVEL => 2,
+  GDA_LDAP_SEARCH_SUBTREE  => 3
+);
+
 constant GdaMetaDbObjectType is export := guint32;
 our enum GdaMetaDbObjectTypeEnum is export <
   GDA_META_DB_UNKNOWN
