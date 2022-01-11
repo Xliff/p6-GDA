@@ -1,13 +1,18 @@
 use v6.c
 
+use Method::Also;
 use NativeCall;
 
 use GDA::Raw::Types;
+
+use GLib::Roles::Object;
 
 our subset GdaTransactionStatusAncestry is export of Mu
   where GdaTransactionStatus | GObject;
 
 class GDA::Transaction::Status {
+  also does GLib::Roles::Object;
+
   has GdaTransactionStatus $!gts is implementor;
 
   submethod BUILD ( :$gda-transaction-status ) {
@@ -17,7 +22,7 @@ class GDA::Transaction::Status {
 
   method setGdaTransactionStatus (GdaTransactionStatusAncestry $_) {
     my $to-parent;
-    
+
     $!gts = do {
       when GdaTransactionStatus {
         $to-parent = cast(GObject, $_);
@@ -46,8 +51,8 @@ class GDA::Transaction::Status {
     $o.ref if $ref;
     $o;
   }
-  multi method new {
-    my $gda-transaction-status = gda_transaction_status_new();
+  multi method new (Str() $name) {
+    my $gda-transaction-status = gda_transaction_status_new($name);
 
     $gda-transaction-status ?? self.bless( :$gda-transaction-status ) !! Nil;
   }
