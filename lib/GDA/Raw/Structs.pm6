@@ -350,6 +350,31 @@ class GdaHolder is repr<CStruct> is export {
 	has gpointer  $!priv  ;
 }
 
+class GdaLdapAttribute is repr<CStruct> is export {
+  has Str                     $!attr_name;
+  has guint                   $.nb_values  is rw;
+  has CArray[Pointer[GValue]] $!values;
+
+  method attr_name is rw {
+    Proxy.new:
+      FETCH => -> $           { $!attr_name       },
+      STORE => -> $, Str() $s { $!attr_name := $s };
+  }
+}
+
+class GdaLdapEntry is repr<CStruct> is export {
+  has Str                               $!dn;
+  has guint                             $.nb_attributes;
+  has CArray[Pointer[GdaLdapAttribute]] $!attributes;
+  has GHashTable                        $.attributes_hash;
+
+  method dn is rw {
+    Proxy.new:
+      FETCH => -> $           { $!dn       },
+      STORE => -> $, Str() $s { $!dn := $s };
+  }
+}
+
 class GdaMetaStore is repr<CStruct> is export {
 	HAS GObject   $!object;
 	has gpointer  $!priv  ;
