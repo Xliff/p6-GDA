@@ -10,14 +10,14 @@ use GDA::Raw::Connection;
 use GLib::GList;
 use GLib::GSList;
 use GLib::Value;
-# use GDA::Connection::Event;
+use GDA::Connection::Event;
 use GDA::Holder;
-# use GDA::Meta::Store;
+use GDA::Meta::Store;
 use GDA::Set;
-# use GDA::Service::Provider;
+use GDA::Server::Provider;
 use GDA::SQL::Parser;
 use GDA::Statement;
-# use GDA::TransactionStatus;
+use GDA::Transaction::Status;
 
 use GLib::Roles::Object;
 use GDA::Roles::Data::Model;
@@ -723,7 +723,7 @@ class GDA::Connection {
     propReturnObject(
       gda_connection_get_provider($!gc),
       $raw,
-      |GDA::Service::Provider.getTypePair
+      |GDA::Server::Provider.getTypePair
     );
   }
 
@@ -1155,7 +1155,7 @@ class GDA::Connection {
   }
 
   method update_meta_store (
-    GdaMetaContext()        $context,
+    GdaMetaContext()        $context   = GdaMetaContext,
     CArray[Pointer[GError]] $error     = gerror
   )
     is also<update-meta-store>
