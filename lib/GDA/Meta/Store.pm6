@@ -1,12 +1,13 @@
 use v6.c;
 
+use Method::Also;
+
 use NativeCall;
 
 use GDA::Raw::Types;
 use GDA::Raw::Meta::Store;
 
 use GLib::GList;
-use GDA::Connection;
 
 use GLib::Roles::Object;
 use GDA::Roles::Data::Model;
@@ -41,7 +42,7 @@ class GDA::Meta::Store {
     self!setObject($to-parent);
   }
 
-  method GDA::Raw::Definition::GdaMetaStore
+  method GDA::Raw::Structs::GdaMetaStore
     is also<GdaMetaStore>
   { $!gms }
 
@@ -58,15 +59,18 @@ class GDA::Meta::Store {
     $gda-meta-store ?? self.bless( :$gda-meta-store ) !! Nil;
   }
 
-  method new_with_file (Str() $filename) {
+  method new_with_file (Str() $filename) is also<new-with-file> {
     my $gda-meta-store = gda_meta_store_new_with_file($filename);
+    say "F: { $filename } / { $gda-meta-store // '»» UNSET ««' }";
+    say $ERROR.gist if $ERROR;
 
     $gda-meta-store ?? self.bless( :$gda-meta-store ) !! Nil;
   }
 
   # Type: GdaConnection
   method cnc ( :$raw = False ) is rw  {
-    my $gv = GLib::Value.new( GDA::Connection.get_type );
+    my \gda_connection = ::('GDA::Connection');
+    my $gv = GLib::Value.new( gda_connection.get_type );
     Proxy.new(
       FETCH => sub ($) {
         $gv = GLib::Value.new(
@@ -75,7 +79,7 @@ class GDA::Meta::Store {
         propReturnObject(
           $gv.object,
           $raw,
-          |GDA::Connection.getTypePair
+          | gda_connection.getTypePair
         );
       },
       STORE => -> $,  $val is copy {
@@ -86,17 +90,19 @@ class GDA::Meta::Store {
 
   # Is originally:
   # GdaMetaStore, gpointer --> void
-  method meta-reset {
+  method meta-reset is also<meta_reset> {
     self.connect-meta-reset($!gms);
   }
 
   # Is originally:
   # GdaMetaStore, gpointer, gpointer --> void
-  method meta-changed {
+  method meta-changed is also<meta_changed> {
     self.connect-pointer($!gms, 'meta-changed');
   }
 
-  method create_modify_data_model (Str() $table_name, :$raw = False) {
+  method create_modify_data_model (Str() $table_name, :$raw = False)
+    is also<create-modify-data-model>
+  {
     propReturnObject(
       gda_meta_store_create_modify_data_model($!gms, $table_name),
       $raw,
@@ -105,6 +111,7 @@ class GDA::Meta::Store {
   }
 
   proto method declare_foreign_key (|)
+    is also<declare-foreign-key>
   { * }
 
   multi method declare_foreign_key (
@@ -220,7 +227,7 @@ class GDA::Meta::Store {
 
   }
 
-  method error_quark {
+  method error_quark is also<error-quark> {
     gda_meta_store_error_quark();
   }
 
@@ -235,13 +242,16 @@ class GDA::Meta::Store {
     Str()                   $select_sql,
     GHashTable()            $vars,
     CArray[Pointer[GError]] $error       = gerror
-  ) {
+  )
+    is also<extract-v>
+  {
     clear_error;
     gda_meta_store_extract_v($!gms, $select_sql, $vars, $error);
     set_error($error);
   }
 
   proto method get_attribute_value (|)
+    is also<get-attribute-value>
   { * }
 
   multi method get_attribute_value (
@@ -275,21 +285,23 @@ class GDA::Meta::Store {
     $all.not ?? $rv !! ( $rv, $att_value )
   }
 
-  method get_internal_connection ( :$raw = False ) {
+  method get_internal_connection ( :$raw = False )
+    is also<get-internal-connection>
+  {
     propReturnObject(
       gda_meta_store_get_internal_connection($!gms),
       $raw,
-      |GDA::Connection.getTypePair
+      |::('GDA::Connection').getTypePair
     );
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gda_meta_store_get_type, $n, $t );
   }
 
-  method get_version {
+  method get_version is also<get-version> {
     gda_meta_store_get_version($!gms);
   }
 
@@ -307,6 +319,7 @@ class GDA::Meta::Store {
 
 
   proto method modify_v (|)
+    is also<modify-v>
   { * }
 
   multi method modify (
@@ -389,7 +402,9 @@ class GDA::Meta::Store {
     GdaMetaContext()        $context,
     GdaDataModel()          $new_data,
     CArray[Pointer[GError]] $error     = gerror
-  ) {
+  )
+    is also<store-modify-with-context>
+  {
     clear_error;
     gda_meta_store_modify_with_context($!gms, $context, $new_data, $error);
     set_error($error);
@@ -399,25 +414,32 @@ class GDA::Meta::Store {
     Str()                   $att_name,
     Str()                   $att_value,
     CArray[Pointer[GError]] $error      = gerror
-  ) {
+  )
+    is also<set-attribute-value>
+  {
     gda_meta_store_set_attribute_value($!gms, $att_name, $att_value, $error);
   }
 
-  method set_identifiers_style (Int() $style) {
+  method set_identifiers_style (Int() $style) is also<set-identifiers-style> {
     my GdaSqlIdentifierStyle $s = $style;
 
     gda_meta_store_set_identifiers_style($!gms, $s);
   }
 
-  method set_reserved_keywords_func (&func) {
+  method set_reserved_keywords_func (&func)
+    is also<set-reserved-keywords-func>
+  {
     gda_meta_store_set_reserved_keywords_func($!gms, &func);
   }
 
-  method sql_identifier_quote (GdaConnection() $cnc) {
+  method sql_identifier_quote (GdaConnection() $cnc)
+    is also<sql-identifier-quote>
+  {
     gda_meta_store_sql_identifier_quote($!gms, $cnc);
   }
 
   proto method undeclare_foreign_key (|)
+    is also<undeclare-foreign-key>
   { * }
 
   multi method undeclare_foreign_key (
@@ -487,7 +509,9 @@ class GDA::Meta::Store::Schema is GDA::Meta::Store {
   method add_custom_object (
     Str()                   $xml_description,
     CArray[Pointer[GError]] $error            = gerror
-  ) {
+  )
+    is also<add-custom-object>
+  {
     clear_error;
     gda_meta_store_schema_add_custom_object(
       self.GdaMetaStore,
@@ -497,7 +521,9 @@ class GDA::Meta::Store::Schema is GDA::Meta::Store {
     set_error($error);
   }
 
-  method get_all_tables ( :$raw = False, :$glist = False ) {
+  method get_all_tables ( :$raw = False, :$glist = False )
+    is also<get-all-tables>
+  {
     returnGList(
       gda_meta_store_schema_get_all_tables(self.GdaMetaStore),
       $raw,
@@ -505,7 +531,9 @@ class GDA::Meta::Store::Schema is GDA::Meta::Store {
     );
   }
 
-  method get_depend_tables (Str() $table_name, :$glist = False, :$raw = False) {
+  method get_depend_tables (Str() $table_name, :$glist = False, :$raw = False)
+    is also<get-depend-tables>
+  {
     returnGList(
       gda_meta_store_schema_get_depend_tables(
         self.GdaMetaStore,
@@ -516,7 +544,9 @@ class GDA::Meta::Store::Schema is GDA::Meta::Store {
     );
   }
 
-  method get_structure (CArray[Pointer[GError]] $error = gerror) {
+  method get_structure (CArray[Pointer[GError]] $error = gerror)
+    is also<get-structure>
+  {
     clear_error;
     gda_meta_store_schema_get_structure(
       self.GdaMetaStore,
@@ -528,7 +558,9 @@ class GDA::Meta::Store::Schema is GDA::Meta::Store {
   method remove_custom_object (
     Str()                   $obj_name,
     CArray[Pointer[GError]] $error     = gerror
-  ) {
+  )
+    is also<remove-custom-object>
+  {
     clear_error;
     gda_meta_store_schema_remove_custom_object(
       self.GdaMetaStore,
