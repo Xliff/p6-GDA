@@ -27,14 +27,14 @@ sub MAIN (
 
   $control = "{ %config<include-directory> //
                '/usr/include/gtk-3.0/gtk' }/{ $control }"
-    unless $control.starts-with('http:' | 'https:' | '/');
+    unless $control.starts-with('http:' | 'https:' | 'file:' | '/');
 
   sub trimIt ($_) {
     .Str.subst("\n", ' ', :g).subst(/\s+/, ' ', :g)
   }
 
-  if $control ~~ / ^ 'http's?'://' / {
-    $control ~~ / 'http' s? '://' <-[\#]>+ /;
+  if $control ~~ / ^ [ 'http's? | 'file' ] '://' .+? '.' .+? 'ml' / {
+    $control ~~ / [ 'http's? | 'file' ] '://' <-[\#]>+ /;
     my $new_prefix = $/.Str;
     my $new_control = $new_prefix.split('/')[* - 1];
     $new_control ~~ s/ '.' (.+?) $//;
@@ -45,10 +45,21 @@ sub MAIN (
     say "Attempting with prefix = { $prefix } control = { $control }";
 
     my $uri = "{ $prefix }{ $control }{ $ext }";
+    say $prefix;
     say "Retrieving: $uri";
-    my $dom = DOM::Tiny.parse(
-      LWP::Simple.new.get($uri)
-    );
+
+    my $markup = do  {
+      when $prefix.starts-with('http' | 'https') {
+        LWP::Simple.new.get($uri)
+      }
+
+      when $prefix.starts-with('file') {
+        my $loc = $uri;
+        $loc.subst('file://', '').IO.slurp
+      }
+    }
+
+    my $dom = DOM::Tiny.parse($markup);
 
 
     #my $sig-div = $dom.find('div.refsect1 a').to_array.List.grep(
@@ -127,6 +138,9 @@ sub MAIN (
       my $s-sig = .<sig>.&trimIt.split(',').map({
         .subst('const ', '').subst('gchar', 'Str', :g)
       });
+
+      .<signal>.gist.say;
+
       my $udm = $s-sig.elems == 2 && $s-sig.tail.contains('void');
       my $signal-name = %proper-sig-name{ .<signal> };
       %signals{ $signal-name } = my %sig-data = (
