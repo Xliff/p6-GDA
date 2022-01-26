@@ -292,6 +292,14 @@ our enum GdaMetaStructErrorEnum is export <
   GDA_META_STRUCT_XML_ERROR
 >;
 
+constant GdaMetaStructFeature is export := guint32;
+our enum GdaMetaStructFeatureEnum is export (
+  GDA_META_STRUCT_FEATURE_NONE              => 0,
+  GDA_META_STRUCT_FEATURE_FOREIGN_KEYS      => 1,
+  GDA_META_STRUCT_FEATURE_VIEW_DEPENDENCIES => 2,
+  GDA_META_STRUCT_FEATURE_ALL               => 1 +| 2 #= GDA_META_STRUCT_FEATURE_FOREIGN_KEYS | GDA_META_STRUCT_FEATURE_VIEW_DEPENDENCIES
+);
+
 constant GdaPrefixDir is export := guint32;
 our enum GdaPrefixDirEnum is export <
   GDA_NO_DIR
