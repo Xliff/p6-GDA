@@ -5,6 +5,7 @@ use NativeCall;
 use GLib::Raw::Definitions;
 use GLib::Raw::Structs;
 use GDA::Raw::Definitions;
+use GDA::Raw::Enums;
 use GDA::Raw::Structs;
 
 unit package GDA::Raw::Meta::Struct;
@@ -97,7 +98,11 @@ sub gda_meta_struct_get_db_object (
   is export
 { * }
 
-sub gda_meta_struct_get_table_column (GdaMetaStruct $mstruct, GdaMetaTable $table, GValue $col_name)
+sub gda_meta_struct_get_table_column (
+  GdaMetaStruct $mstruct,
+  GdaMetaTable  $table,
+  GValue        $col_name
+)
   returns GdaMetaTableColumn
   is native(gda)
   is export
