@@ -350,7 +350,7 @@ role GDA::Roles::Data::Model {
     gda_data_model_get_row_from_values($!gdm, $values, $cols_index);
   }
 
-  method get_type is also<get-type> {
+  method gdadatamodel_get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gda_data_model_get_type, $n, $t );
@@ -648,6 +648,10 @@ class GDA::Data::Model {
     my $o = self.bless( :$gda-data-model );
     $o.ref if $ref;
     $o;
+  }
+
+  method get_type {
+    self.gdadatamodel_get_type
   }
 
 }
