@@ -212,7 +212,7 @@ sub MAIN (
     my $emission;
     my $params = "self{ $pp ?? ', ' !! ''}{ $pp }";
     $params ~= ", \$ud" if $user-data;
-    if $rt.defined && $rt.trim && $rt.trim ne 'void' {
+    if $rt && $rt.subst('-->', '').trim ne 'void' {
       $emission = qq:to/NONVOID/.chomp;
                 my \$r = ReturnedValue.new;
                 𝒮.emit( [{ $params }, \$r] );
