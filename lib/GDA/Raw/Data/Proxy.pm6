@@ -1,7 +1,12 @@
 use v6.c;
 
+use NativeCall;
+
 use GLib::Raw::Definitions;
+use GLib::Raw::Structs;
 use GDA::Raw::Definitions;
+use GDA::Raw::Enums;
+use GDA::Raw::Structs;
 
 unit package GDA::Raw::Data::Proxy;
 
