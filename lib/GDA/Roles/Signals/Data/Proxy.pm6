@@ -2,6 +2,7 @@ use v6.c;
 
 use NativeCall;
 
+use GLib::Raw::ReturnedValue;
 use GDA::Raw::Types;
 
 role GDA::Roles::Signals::Data::Proxy {
