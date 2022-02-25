@@ -161,6 +161,17 @@ multi sub gda_holder_new_inline_int (GType $type, Str $id, gint $val, Str)
   is symbol('gda_holder_new_inline')
 { * }
 
+multi sub gda_holder_new_inline_bin (
+  GType     $type,
+  Str       $id,
+  GdaBinary $val,
+  Str
+)
+  returns GdaHolder
+  is native(gda)
+  is export
+  is symbol('gda_holder_new_inline')
+{ * }
 
 sub gda_holder_set_attribute (
   GdaHolder      $holder,
