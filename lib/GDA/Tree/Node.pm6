@@ -1,5 +1,7 @@
 use v6.c;
 
+use Method::Also;
+
 use GDA::Raw::Types;
 use GDA::Raw::Tree::Node;
 
@@ -74,33 +76,35 @@ class GDA::Tree::Node {
 
   # Is originally:
   # GdaTreeNode, GdaTreeNode, gpointer --> void
-  method node-inserted {
+  method node-inserted is also<node_inserted> {
     self.connect-node-inserted($!gtn, 'node-inserted');
   }
 
   # Is originally:
   # GdaTreeNode, GdaTreeNode, gpointer --> void
-  method node-has-child-toggled {
+  method node-has-child-toggled is also<node_has_child_toggled> {
     self.connect-node-has-child-toggled($!gtn, 'node-has-child-toggled');
   }
 
   # Is originally:
   # GdaTreeNode, gchar, gpointer --> void
-  method node-deleted {
+  method node-deleted is also<node_deleted> {
     self.connect-node-deleted($!gtn, 'node-deleted');
   }
 
   # Is originally:
   # GdaTreeNode, GdaTreeNode, gpointer --> void
-  method node-changed {
+  method node-changed is also<node_changed> {
     self.connect-node-changed($!gtn, 'node-changed');
   }
 
-  method error_quark ( GDA::Tree::Node:U: ) {
+  method error_quark ( GDA::Tree::Node:U: ) is also<error-quark> {
     gda_tree_node_error_quark();
   }
 
-  method fetch_attribute (Str() $attribute, :$raw = False) {
+  method fetch_attribute (Str() $attribute, :$raw = False)
+    is also<fetch-attribute>
+  {
     propReturnObject(
       gda_tree_node_fetch_attribute($!gtn, $attribute),
       $raw,
@@ -108,7 +112,9 @@ class GDA::Tree::Node {
     );
   }
 
-  method get_child_index (Int() $index, :$raw = False) {
+  method get_child_index (Int() $index, :$raw = False)
+    is also<get-child-index>
+  {
     my gint $i = $index;
 
     propReturnObject(
@@ -118,7 +124,7 @@ class GDA::Tree::Node {
     );
   }
 
-  method get_child_name (Str() $name, :$raw = False) {
+  method get_child_name (Str() $name, :$raw = False) is also<get-child-name> {
     propReturnObject(
       gda_tree_node_get_child_name($!gtn, $name),
       $raw,
@@ -126,7 +132,7 @@ class GDA::Tree::Node {
     );
   }
 
-  method get_children (:$glist = False, :$raw = False) {
+  method get_children (:$glist = False, :$raw = False) is also<get-children> {
     returnGList(
       gda_tree_node_get_children($!gtn),
       $raw,
@@ -135,7 +141,9 @@ class GDA::Tree::Node {
     );
   }
 
-  method get_node_attribute (Str() $attribute, :$raw = False) {
+  method get_node_attribute (Str() $attribute, :$raw = False)
+    is also<get-node-attribute>
+  {
     propReturnObject(
       gda_tree_node_get_node_attribute($!gtn, $attribute),
       $raw,
@@ -143,7 +151,7 @@ class GDA::Tree::Node {
     )
   }
 
-  method get_parent ( :$raw = False ) {
+  method get_parent ( :$raw = False ) is also<get-parent> {
     propReturnObject(
       gda_tree_node_get_parent($!gtn),
       $raw,
@@ -151,7 +159,7 @@ class GDA::Tree::Node {
     )
   }
 
-  method get_type {
+  method get_type is also<get-type> {
     state ($n, $t);
 
     unstable_get_type( self.^name, &gda_tree_node_get_type, $n, $t);
@@ -161,7 +169,9 @@ class GDA::Tree::Node {
     Str()          $attribute,
     GValue()       $value,
     GDestroyNotify $destroy    = gpointer
-  ) {
+  )
+    is also<set-node-attribute>
+  {
     gda_tree_node_set_node_attribute($!gtn, $attribute, $value, $destroy);
   }
 
