@@ -5,23 +5,11 @@ use Method::Also;
 
 use GDA::Raw::Types;
 use GDA::Raw::Holder;
+use GDA::Raw::Exceptions;
 
 use GLib::Roles::Object;
 use GDA::Roles::Data::Model;
 use GDA::Roles::Signals::Holder;
-
-class X::GDA::Holder::InvalidType is Exception is export {
-  has $!bad-var is built;
-
-  method new ($bad-var) {
-    self.bless( :$bad-var )
-  }
-
-  method message {
-    "An invalid type of { $!bad-var.^name } was used."
-  }
-
-}
 
 our subset GdaHolderAncestry is export of Mu
   where GdaHolder | GObject;
@@ -71,15 +59,7 @@ class GDA::Holder {
   }
 
   multi method new (Str() $id, $val) {
-    my $gda-holder = do given $val {
-      when Str  { gda_holder_new_inline_string(G_TYPE_STRING, $id, $val)       }
-      when Bool { gda_holder_new_inline_bool(G_TYPE_BOOLEAN, $id, $val.so.Int) }
-      when Int  { gda_holder_new_inline_int(G_TYPE_INT, $id, $val +& 0xfff)    }
-
-      default {
-        X::GDA::Holder::InvalidType.new($val).throw
-      }
-    }
+    my $gda-holder = valueToHolder($id, $val);
 
     $gda-holder ?? self.bless( :$gda-holder ) !! Nil;
   }
@@ -88,6 +68,145 @@ class GDA::Holder {
     Proxy.new:
       FETCH => -> $     { self.get_attribute    },
       STORE => -> $, \v { self.set_attribute(v) }
+  }
+
+  # Type: string
+  method description is rw  {
+    my $gv = GLib::Value.new( G_TYPE_STRING );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('description', $gv)
+        );
+        $gv.string;
+      },
+      STORE => -> $, Str() $val is copy {
+        $gv.string = $val;
+        self.prop_set('description', $gv);
+      }
+    );
+  }
+
+  # Type: GdaHolder
+  method full-bind is rw  {
+    my $gv = GLib::Value.new( GdaHolder );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('full-bind', $gv)
+        );
+        $gv.GdaHolder;
+      },
+      STORE => -> $,  $val is copy {
+        $gv.GdaHolder = $val;
+        self.prop_set('full-bind', $gv);
+      }
+    );
+  }
+
+  # Type: GType
+  method g-type is rw  {
+    my $gv = GLib::Value.new( G_TYPE_LONG );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('g-type', $gv)
+        );
+        $gv.long;
+      },
+      STORE => -> $,  $val is copy {
+        warn 'g-type is a construct-only attribute'
+      }
+    );
+  }
+
+  # Type: string
+  method id is rw  {
+    my $gv = GLib::Value.new( G_TYPE_STRING );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('id', $gv)
+        );
+        $gv.string;
+      },
+      STORE => -> $, Str() $val is copy {
+        $gv.string = $val;
+        self.prop_set('id', $gv);
+      }
+    );
+  }
+
+  # Type: string
+  method name is rw  {
+    my $gv = GLib::Value.new( G_TYPE_STRING );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('name', $gv)
+        );
+        $gv.string;
+      },
+      STORE => -> $, Str() $val is copy {
+        $gv.string = $val;
+        self.prop_set('name', $gv);
+      }
+    );
+  }
+
+  # Type: GdaHolder
+  method simple-bind ( :$raw = False ) is rw  {
+    my $gv = GLib::Value.new( GDA::Holder.get_type );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('simple-bind', $gv)
+        );
+        propReturnObject(
+          $gv.object,
+          $raw,
+          |GDA::Holder.getTypePair
+        );
+      },
+      STORE => -> $, GdaHolder() $val is copy {
+        $gv.object = $val;
+        self.prop_set('simple-bind', $gv);
+      }
+    );
+  }
+
+  # Type: int
+  method source-column is rw  {
+    my $gv = GLib::Value.new( G_TYPE_INT );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('source-column', $gv)
+        );
+        $gv.int;
+      },
+      STORE => -> $, Int() $val is copy {
+        $gv.int = $val;
+        self.prop_set('source-column', $gv);
+      }
+    );
+  }
+
+  # Type: boolean
+  method validate-changes is rw  {
+    my $gv = GLib::Value.new( G_TYPE_BOOLEAN );
+    Proxy.new(
+      FETCH => sub ($) {
+        $gv = GLib::Value.new(
+          self.prop_get('validate-changes', $gv)
+        );
+        $gv.boolean;
+      },
+      STORE => -> $, Int() $val is copy {
+        $gv.boolean = $val;
+        self.prop_set('validate-changes', $gv);
+      }
+    );
   }
 
   method bind is rw {
@@ -373,4 +492,46 @@ class GDA::Holder {
     so gda_holder_value_is_default($!gh);
   }
 
+}
+
+sub valueToHolder ($id, $_) is export {
+  my uint64 $t = G_TYPE_STRING.Int;
+
+  when Str {
+    gda_holder_new_inline_string($t, $id, $_, Str)
+  }
+
+  $t = G_TYPE_BOOLEAN.Int;
+  when Bool {
+    my guint32 $v = .so.Int;
+
+    gda_holder_new_inline_bool($t, $id, .so.Int, Str)
+  }
+
+  $t = G_TYPE_INT.Int;
+  when Int {
+    my int32 $v = $_ +& 0xfff;
+
+    gda_holder_new_inline_int($t, $id, $v, Str)
+  }
+
+  $t = GdaBinary.get_type;
+  when GdaBinary {
+    gda_holder_new_inline_bin($t, $id, $_, Str)
+  }
+
+  default {
+    X::GDA::Holder::InvalidType.new($_).throw
+  }
+}
+
+sub get-gda-holder-from-proxy-value ($_) is export {
+  do {
+    when Array              { valueToHolder( |$_ )          }
+    when Pair               { valueToHolder( .key, .value ) }
+    when .^can('GdaHolder') { .GdaHolder                    }
+    when GdaHolder          { $_                            }
+
+    default { X::GDA::Holder::InvalidHolderProxy.new($_).throw }
+  }
 }
