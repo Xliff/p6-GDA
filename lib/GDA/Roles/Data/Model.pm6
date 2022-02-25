@@ -8,7 +8,6 @@ use GDA::Raw::Data::Model;
 use LibXML::Raw;
 
 use GLib::HashTable;
-use GDA::Set;
 
 use GLib::Roles::Object;
 use GLib::Roles::TypedBuffer;
@@ -405,7 +404,7 @@ role GDA::Roles::Data::Model {
     samewith(
       $file,
       GLib::HashTable.new(%cols_trans),
-      GDA::Set.new(@options),
+      ::('GDA::Set').new(@options),
       $error
     );
   }
