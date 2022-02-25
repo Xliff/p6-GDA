@@ -2,6 +2,7 @@ use v6.c;
 
 use Method::Also;
 
+use GLib::Raw::Traits;
 use GDA::Raw::Types;
 use GDA::Raw::Connection::Event;
 
@@ -16,7 +17,8 @@ class GDA::Connection::Event {
   has GdaConnectionEvent $!gce;
 
   submethod BUILD ( :$gda-connection-event ) {
-    self.setGdaConnectionEvent( $gda-connection-event ) if $gda-connection-event
+    self.setGdaConnectionEvent( $gda-connection-event )
+      if $gda-connection-event
   }
 
   method setGdaConnectionEvent (GdaConnectionEventAncestry $_) {
