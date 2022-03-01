@@ -8,12 +8,14 @@ use GDA::Raw::Types;
 use GDA::Raw::Data::Select;
 
 use GLib::Roles::Object;
+use GDA::Roles::Data::Model;
 
 our subset GdaDataSelectAncestry is export of Mu
-  where GdaDataSelect | GObject;
+  where GdaDataSelect | GdaDataModel | GObject;
 
 class GDA::Data::Select {
   also does GLib::Roles::Object;
+  also does GDA::Roles::Data::Model;
 
   has GdaDataSelect $!gds;
 
@@ -29,12 +31,19 @@ class GDA::Data::Select {
         $_;
       }
 
+      when GdaDataModel {
+        $to-parent = cast(GObject, $_);
+        $!gdm      = $_;
+        cast(GdaDataSelect, $_);
+      }
+
       default {
         $to-parent = $_;
         cast(GdaDataSelect, $_);
       }
     }
     self!setObject($to-parent);
+    self.roleInit-GdaDataModel;
   }
 
   method GDA::Raw::Definition::GdaDataSelect
