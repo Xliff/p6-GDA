@@ -24,8 +24,9 @@ role GDA::Roles::Data::Model {
     $!gdm = cast( GdaDataModel, i.get_value(self) );
   }
 
-  method GDA::Raw::Definition::GdaDataModel
-    is also<GdaDataModel>
+  method GDA::Raw::Definitions::GdaDataModel
+  { $!gdm }
+  method GdaDataModel
   { $!gdm }
 
   method column_name is rw is also<column-name> {
