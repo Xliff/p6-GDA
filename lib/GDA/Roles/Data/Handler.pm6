@@ -10,6 +10,12 @@ use GLib::Value;
 role GDA::Roles::Data::Handler {
   has GdaDataHandler $!gdh;
 
+  method roleInit-GdaDataHandler is also<roleInit_GdaDataHandler> {
+    my \i = findProperImplementor( self.^attributes );
+
+    $!gdm = cast( GdaDataHandler, i.get_value(self) );
+  }
+
   method GDA::Raw::Definition::GdaDataHandler
     is also<GdaDataHandler>
   { $!gdh }
