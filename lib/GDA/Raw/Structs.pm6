@@ -19,15 +19,43 @@ class GdaBatch is repr<CStruct> is export {
 }
 
 class GdaBinary is repr<CStruct> is export {
-	has CArray[uint8] $!data;
-	has glong         $.binary_length is rw;
+	has Pointer $!data;
+	has glong   $.binary_length is rw;
+
+	submethod BUILD ( :$data ) {
+		self.data = $data;
+	}
+
+	method length is rw {
+		$!binary_length;
+	}
 
   #submethod DESTROY { self!free }
 
   method data is rw {
     Proxy.new:
       FETCH => -> $                   { $!data      },
-      STORE => -> $, CArray[uint8] \v { $!data := v }
+      STORE => -> $, \v {
+				given v {
+					when gpointer {
+						$!data := $_;
+						# cw: We've used this in 2 places now, and it's time
+						#     to create a singular code path and put that in p6-GLib or
+						#     LOWER (of course said LOWER doesn't exist, but...)
+						$!binary_length = malloc_usable_size($_);
+					}
+
+					when CArray[uint8] | .REPR eq 'CStruct' {
+						$!data := cast(Pointer, $_);
+						$!binary_length = nativesizeof($_);
+					}
+
+					default {
+						die "Invalid value of type { .^name } discovered while " ~
+						    'setting <data>!'
+					}
+				}
+			}
   }
 
   method copy {
