@@ -40,19 +40,25 @@ class GDA::Holder {
     self!setObject($to-parent);
   }
 
-  method GDA::Raw::Definition::GdaHolder
+  method GDA::Raw::Structs::GdaHolder
     is also<GdaHolder>
   { $!gh }
 
-  multi method new (GdaHolderAncestry $gda-holder, :$ref = True) {
+  proto method new (|c)
+  { * }
+
+  multi method new (
+    GdaHolderAncestry  $gda-holder,
+                      :$ref         is required = True
+  ) {
     return Nil unless $gda-holder;
 
     my $o = self.bless( :$gda-holder );
     $o.ref if $ref;
     $o;
   }
-  multi method new (Int() $type) {
-    my GType $t          = $type;
+  multi method new (Int() $gtype, :$type is required) {
+    my GType $t          = $gtype;
     my       $gda-holder = gda_holder_new($t);
 
     $gda-holder ?? self.bless( :$gda-holder ) !! Nil;
@@ -495,41 +501,63 @@ class GDA::Holder {
 }
 
 sub valueToHolder ($id, $_) is export {
+  CONTROL {
+    when CX::Warn { .message.say; .backtrace.concise.say }
+    default       { .rethrow }
+  }
+
   my uint64 $t = G_TYPE_STRING.Int;
 
-  when Str {
-    gda_holder_new_inline_string($t, $id, $_, Str)
-  }
+  do {
+    when Str {
+      gda_holder_new_inline_string($t, $id, $_, Str);
+    }
 
-  $t = G_TYPE_BOOLEAN.Int;
-  when Bool {
-    my guint32 $v = .so.Int;
+    $t = G_TYPE_BOOLEAN.Int;
+    when Bool {
+      my guint32 $v = .so.Int;
 
-    gda_holder_new_inline_bool($t, $id, .so.Int, Str)
-  }
+      gda_holder_new_inline_bool($t, $id, .so.Int, Str)
+    }
 
-  $t = G_TYPE_INT.Int;
-  when Int {
-    my int32 $v = $_ +& 0xfff;
+    $t = G_TYPE_INT.Int;
+    when Int {
+      my int32 $v = $_ +& 0xfff;
 
-    gda_holder_new_inline_int($t, $id, $v, Str)
-  }
+      gda_holder_new_inline_int($t, $id, $v, Str)
+    }
 
-  $t = GdaBinary.get_type;
-  when GdaBinary {
-    gda_holder_new_inline_bin($t, $id, $_, Str)
-  }
+    $t = GdaBinary.get_type;
+    when .defined.not {
+      gda_holder_new_inline_bin($t, $id, GdaBinary, Str)
+    }
 
-  default {
-    X::GDA::Holder::InvalidType.new($_).throw
+    when gpointer | .REPR eq 'CStruct' {
+      gda_holder_new_inline_bin(
+        $t,
+        $id,
+        GdaBinary.new( data => $_ ),
+        Str
+      );
+    }
+
+    when GdaBinary {
+      gda_holder_new_inline_bin($t, $id, $_, Str)
+    }
+
+    default {
+      X::GDA::Holder::InvalidType.new($_).throw
+    }
   }
 }
 
 sub get-gda-holder-from-proxy-value ($_) is export {
+  say "PV ({ .^name }): { .map( *.gist ) // '»UNDEF«' }";
   do {
     when Array              { valueToHolder( |$_ )          }
     when Pair               { valueToHolder( .key, .value ) }
     when .^can('GdaHolder') { .GdaHolder                    }
+    when Nil                { GdaHolder                     }
     when GdaHolder          { $_                            }
 
     default { X::GDA::Holder::InvalidHolderProxy.new($_).throw }
