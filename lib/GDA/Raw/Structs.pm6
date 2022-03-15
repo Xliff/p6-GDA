@@ -465,13 +465,13 @@ class GdaServerOperation is repr<CStruct> is export {
 }
 
 class GdaServerOperationNode is repr<CStruct> is export {
-	has GdaServerOperationNodeType   $!type  ;
-	has GdaServerOperationNodeStatus $!status;
-	has GdaSet                       $!plist ;
-	has GdaDataModel                 $!model ;
-	has GdaColumn                    $!column;
-	has GdaHolder                    $!param ;
-	has gpointer                     $!priv  ;
+	has GdaServerOperationNodeType   $.type  ;
+	has GdaServerOperationNodeStatus $.status;
+	has GdaSet                       $.plist ;
+	has GdaDataModel                 $.model ;
+	has GdaColumn                    $.column;
+	has GdaHolder                    $.param ;
+	has gpointer                     $.priv  ;
 }
 
 class GdaServerProvider is repr<CStruct> is export {
