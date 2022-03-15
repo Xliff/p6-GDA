@@ -157,7 +157,9 @@ class GDA::SQL::Parser {
     CArray[Pointer[GError]]  $error   = gerror,
                             :$raw     = False
   ) {
-    samewith($sql, newCArray(Str), $error, :$raw);
+    my $r = newCArray(Str);
+    
+    samewith($sql, $r, $error, :$raw);
   }
   multi method parse_string (
     Str()                    $sql,
