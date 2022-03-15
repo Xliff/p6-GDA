@@ -8,6 +8,7 @@ use GDA::Raw::Data::Model;
 use LibXML::Raw;
 
 use GLib::HashTable;
+use GDA::Value;
 
 use GLib::Roles::Object;
 use GLib::Roles::TypedBuffer;
@@ -324,6 +325,9 @@ role GDA::Roles::Data::Model {
   method get_n_rows is also<get-n-rows> {
     gda_data_model_get_n_rows($!gdm);
   }
+  method elems {
+    self.get_n_rows
+  }
 
   method getDims {
     (self.get_n_rows, self.get_n_columns);
@@ -373,7 +377,7 @@ role GDA::Roles::Data::Model {
     clear_error;
     my $v = gda_data_model_get_typed_value_at($!gdm, $c, $r, $e, $n, $error);
     set_error($error);
-    propReturnObject($v, $raw, |GLib::Value.getTypePair)
+    propReturnObject($v, $raw, |GDA::Value.getTypePair)
   }
 
   method get_value_at (
@@ -389,7 +393,7 @@ role GDA::Roles::Data::Model {
     clear_error;
     my $v = gda_data_model_get_value_at($!gdm, $c, $r, $error);
     set_error($error);
-    propReturnObject($v, $raw, |GLib::Value.getTypePair)
+    propReturnObject($v, $raw, |GDA::Value.getTypePair)
   }
 
   proto method import_from_file (|)

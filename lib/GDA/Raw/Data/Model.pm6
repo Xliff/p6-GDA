@@ -182,7 +182,7 @@ sub gda_data_model_get_typed_value_at (
   gboolean                $nullok,
   CArray[Pointer[GError]] $error
 )
-  returns GValue
+  returns GdaValue
   is native(gda)
   is export
 { * }
@@ -193,7 +193,7 @@ sub gda_data_model_get_value_at (
   gint                    $row,
   CArray[Pointer[GError]] $error
 )
-  returns GValue
+  returns GdaValue
   is native(gda)
   is export
 { * }
