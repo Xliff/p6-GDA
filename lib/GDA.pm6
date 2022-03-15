@@ -23,6 +23,8 @@ class GDA {
 
 }
 
+INIT { GDA.init }
+
 ### /usr/include/libgda-5.0/libgda/libgda.h
 
 sub gda_get_application_exec_path (Str $app_name)
