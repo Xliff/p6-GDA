@@ -41,7 +41,8 @@ sub gda_server_operation_error_quark ()
 
 sub gda_server_operation_get_node_info (
   GdaServerOperation $op,
-  Str                $path_format
+  Str                $path_format,
+  Str
 )
   returns GdaServerOperationNode
   is native(gda)
