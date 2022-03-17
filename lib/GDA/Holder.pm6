@@ -402,6 +402,15 @@ class GDA::Holder {
     gda_holder_set_attribute($!gh, $attribute, $value, $destroy);
   }
 
+  method set_attribute_static (
+    Str()          $attribute,
+    GValue()       $value,
+  )
+    is also<set-attribute-static>
+  {
+    self.set_attribute($attribute, $value, gpointer);
+  }
+
   method set_bind (
     GdaHolder()             $bind_to,
     CArray[Pointer[GError]] $error    = gerror
