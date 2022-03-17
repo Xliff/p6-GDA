@@ -53,14 +53,27 @@ class GDA::Server::Provider {
     $o;
   }
 
-  method create_operation (
+  proto method create_operation (|)
+    is also<create-operation>
+  { * }
+
+  multi method create_operation (
+    Int()                    $type,
+    CArray[Pointer[GError]]  $error   = gerror,
+                            :$raw     = False,
+    GdaConnection()         :$cnc     = GdaConnection,
+    GdaSet()                :$options = GdaSet
+  ) {
+    samewith($cnc, $type, $options, $error, :$raw);
+  }
+  multi method create_operation (
     GdaConnection()          $cnc,
     Int()                    $type,
     GdaSet()                 $options,
-    CArray[Pointer[GError]]  $error    =  gerror,
+    CArray[Pointer[GError]]  $error    = gerror,
                             :$raw      = False
   )
-    is also<create-operation>
+
   {
     my GdaServerOperationType  $t = $type;
 
@@ -168,7 +181,17 @@ class GDA::Server::Provider {
     $rv;
   }
 
-  method render_operation (
+  proto method render_operation (|)
+  { * }
+
+  multi method render_operation (
+    Int()                    $op,
+    CArray[Pointer[GError]]  $error = gerror,
+    GdaConnection()         :$cnc   = GdaConnection,
+  ) {
+    samewith($cnc, $op, $error);
+  }
+  multi method render_operation (
     GdaConnection()         $cnc,
     Int()                   $op,
     CArray[Pointer[GError]] $error = gerror
@@ -218,12 +241,22 @@ class GDA::Server::Provider {
     so gda_server_provider_supports_feature($!gsp, $cnc, $feature);
   }
 
-  method supports_operation (
+  proto method supports_operation (|)
+    is also<supports-operation>
+  { * }
+
+  multi method supports_operation (
+    Int()            $type,
+    GdaConnection() :$cnc     = GdaConnection,
+    GdaSet()        :$options = GdaSet
+  ) {
+    samewith($cnc, $type, $options);
+  }
+  multi method supports_operation (
     GdaConnection() $cnc,
     Int()           $type,
     GdaSet()        $options
   )
-    is also<supports-operation>
   {
     my GdaServerOperationType $t = $type;
 
