@@ -1,5 +1,7 @@
 use v6.c;
 
+use GDA::Raw::Types;
+
 use GDA::Column;
 use GDA::Holder;
 use GDA::Set;
@@ -14,7 +16,7 @@ class GDA::Server::Operation::Node {
   }
 
   method new ($node) {
-    $node ?? self.bless( :$node ) ?? Nil;
+    $node ?? self.bless( :$node ) !! Nil;
   }
 
   method getTypePair {
@@ -22,16 +24,16 @@ class GDA::Server::Operation::Node {
   }
 
   method type {
-    GdaServerOperationNodeTypeEnum($gson.type);
+    GdaServerOperationNodeTypeEnum($!gson.type);
   }
 
   method status {
-    GdaServerOperationNodeStatusEnum($gson.status)
+    GdaServerOperationNodeStatusEnum($!gson.status)
   }
 
   method plist ( :$raw = False ) {
     propReturnObject(
-      $gson.plist,
+      $!gson.plist,
       $raw,
       |GDA::Set.getTypePair
     );
@@ -39,7 +41,7 @@ class GDA::Server::Operation::Node {
 
   method model ( :$raw = False ) {
     propReturnObject(
-      $gson.model,
+      $!gson.model,
       $raw,
       GDA::Data::Model.getTypePair
     );
@@ -47,7 +49,7 @@ class GDA::Server::Operation::Node {
 
   method column ( :$raw = False ) {
     propReturnObject(
-      $gson.column,
+      $!gson.column,
       $raw,
       |GDA::Column.getTypePair
     );
@@ -55,7 +57,7 @@ class GDA::Server::Operation::Node {
 
   method param ( :$raw = False ) {
     propReturnObject(
-      $gson.param,
+      $!gson.param,
       $raw,
       GDA::Holder.getTypePair
     );
