@@ -33,6 +33,7 @@ class GDA::Data::Model::Dir {
 
       when GdaDataModel {
         $to-parent = cast(GObject, $_);
+        $!gdm      = $_;
         cast(GdaDataModelDir, $_);
       }
 
