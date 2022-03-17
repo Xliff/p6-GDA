@@ -4,7 +4,7 @@ use NativeCall;
 
 use GDA::Raw::Types;
 
-role GDA::Role::Signals::Column {
+role GDA::Roles::Signals::Column {
   has %!signals-gc;
 
   # GdaColumn, GType, GType, gpointer
