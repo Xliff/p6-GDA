@@ -18,7 +18,7 @@ class GDA::Column {
   has GdaColumn $!gc is implementor;
 
   submethod BUILD ( :$gda-column ) {
-    self.setGdaColumn( $gda-column ) if $gda-Column
+    self.setGdaColumn( $gda-column ) if $gda-column
   }
 
   method setGdaColumn (GdaColumnAncestry $_) {
@@ -128,7 +128,7 @@ class GDA::Column {
   # Is originally:
   # GdaColumn, GType, GType, gpointer --> void
   method g-type-changed {
-    self.connect-g-type-changed($!w);
+    self.connect-g-type-changed($!gc);
   }
 
   # Is originally:
@@ -146,7 +146,7 @@ class GDA::Column {
   }
 
   method get_allow_null {
-    SO gda_column_get_allow_null($!gc);
+    so gda_column_get_allow_null($!gc);
   }
 
   method get_attribute (Str() $attribute) {
@@ -224,8 +224,9 @@ class GDA::Column {
   }
 
   method set_g_type (Int() $type) {
-    my GType $t = $t;
-    gda_column_set_g_type($!gc, $type);
+    my GType $t = $type;
+
+    gda_column_set_g_type($!gc, $t);
   }
 
   method set_name (Str() $name) {
