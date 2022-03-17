@@ -48,7 +48,7 @@ sub gda_data_model_iter_get_type ()
 { * }
 
 sub gda_data_model_iter_get_value_at (GdaDataModelIter $iter, gint $col)
-  returns GValue
+  returns GdaValue
   is native(gda)
   is export
 { * }
@@ -58,7 +58,7 @@ sub gda_data_model_iter_get_value_at_e (
   gint                    $col,
   CArray[Pointer[GError]] $error
 )
-  returns GValue
+  returns GdaValue
   is native(gda)
   is export
 { * }
@@ -67,7 +67,7 @@ sub gda_data_model_iter_get_value_for_field (
   GdaDataModelIter $iter,
   Str              $field_name
 )
-  returns GValue
+  returns GdaValue
   is native(gda)
   is export
 { * }
