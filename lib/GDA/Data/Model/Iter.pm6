@@ -8,7 +8,7 @@ use NativeCall;
 use GDA::Raw::Types;
 use GDA::Raw::Data::Model::Iter;
 
-use GLib::Value;
+use GDA::Value;
 use GDA::Set;
 
 use GDA::Roles::Signals::Data::Model::Iter;
@@ -185,7 +185,7 @@ class GDA::Data::Model::Iter is GDA::Set {
     propReturnObject(
       gda_data_model_iter_get_value_at($!gdmi, $c),
       $raw,
-      |GLib::Value.getTypePair
+      |GDA::Value.getTypePair
     );
   }
 
@@ -202,7 +202,7 @@ class GDA::Data::Model::Iter is GDA::Set {
     my $v = propReturnObject(
       gda_data_model_iter_get_value_at_e($!gdmi, $col, $error),
       $raw,
-      |GLib::Value.getTypePair
+      |GDA::Value.getTypePair
     );
     set_error($error);
     $v;
@@ -214,7 +214,7 @@ class GDA::Data::Model::Iter is GDA::Set {
     propReturnObject(
       gda_data_model_iter_get_value_for_field($!gdmi, $field_name),
       $raw,
-      |GLib::Value.getTypePair
+      |GDA::Value.getTypePair
     );
   }
 
