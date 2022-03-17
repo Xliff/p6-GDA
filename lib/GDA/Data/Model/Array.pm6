@@ -9,12 +9,14 @@ use GDA::Raw::Data::Model::Array;
 use GDA::Row;
 
 use GLib::Roles::Object;
+use GDA::Roles::Data::Model;
 
 our subset GdaDataModelArrayAncestry is export of Mu
-  where GdaDataModelArray | GObject;
+  where GdaDataModelArray | GdaDataModel | GObject;
 
 class GDA::Data::Model::Array {
   also does GLib::Roles::Object;
+  also does GDA::Roles::Data::Model;
 
   has GdaDataModelArray $!gdma;
 
@@ -31,12 +33,19 @@ class GDA::Data::Model::Array {
         $_;
       }
 
+      when GdaDataModel {
+        $to-parent = cast(GObject, $_);
+        $!gdm      = $_;
+        cast(GdaDataModelArray, $_);
+      }
+
       default {
         $to-parent = $_;
         cast(GdaDataModelArray, $_);
       }
     }
     self!setObject($to-parent);
+    self.roleInit-GdaDataModel;
   }
 
   method GDA::Raw::Definition::GdaDataModelArray
@@ -61,8 +70,15 @@ class GDA::Data::Model::Array {
     $gda-data-model-array ?? self.bless( :$gda-data-model-array ) !! Nil;
   }
 
-  method new_with_g_types (@cols) is also<new-with-g-types> {
-    self.new_with_g_types_v( @cols.elems, ArrayToCArray(Int, @cols) );
+  proto method new_with_g_types (|)
+    is also<new-with-g-types>
+  { * }
+
+  multi method new_with_g_types (*@cols) {
+    samewith(@cols);
+  }
+  multi method new_with_g_types (@cols)  {
+    self.new_with_g_types_v( @cols.elems, ArrayToCArray(GType, @cols) );
   }
 
   method new_with_g_types_v (Int() $cols, CArray[GType] $types)
