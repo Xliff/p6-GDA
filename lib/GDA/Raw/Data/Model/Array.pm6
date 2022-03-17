@@ -64,7 +64,7 @@ sub gda_data_model_array_new_with_g_types (gint $cols)
   is export
 { * }
 
-sub gda_data_model_array_new_with_g_types_v (gint $cols, GType $types)
+sub gda_data_model_array_new_with_g_types_v (gint $cols, CArray[GType] $types)
   returns GdaDataModel
   is native(gda)
   is export
