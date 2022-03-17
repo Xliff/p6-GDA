@@ -5,11 +5,12 @@ use Method::Also;
 use NativeCall;
 
 use LibXML::Raw;
+use LibXML::Node;
 
 use GDA::Raw::Types;
 use GDA::Raw::Server::Operation;
 
-use GLib::Value;
+use GDA::Value;
 
 use GLib::Roles::Object;
 use GDA::Roles::Signals::Server::Operation;
@@ -43,7 +44,7 @@ class GDA::Server::Operation {
     self!setObject($to-parent);
   }
 
-  method GDA::Raw::Definition::GdaServerOperation
+  method GDA::Raw::Structs::GdaServerOperation
     is also<GdaServerOperation>
   { $!gso }
 
@@ -57,8 +58,8 @@ class GDA::Server::Operation {
     $o.ref if $ref;
     $o;
   }
-  multi method new (Str() $xml_file) {
-    my $gda-server-operation = gda_server_operation_new($xml_file);
+  multi method new (Int() $type, Str() $xml_file) {
+    my $gda-server-operation = gda_server_operation_new($type, $xml_file);
 
     $gda-server-operation ?? self.bless( :$gda-server-operation ) !! Nil;
   }
@@ -87,10 +88,15 @@ class GDA::Server::Operation {
     gda_server_operation_error_quark();
   }
 
-  # cw: Varargs are currently out-of-scope. See if there is a workaround.
-  # method get_node_info (Str $path_format, ...) {
-  #   gda_server_operation_get_node_info($!gso, $path_format);
-  # }
+  # cw: This is originally a var-arg call. We terminate it at the earliest
+  #     possible argument.
+  method get_node_info (Str() $path_format, :$raw = False) {
+    propReturnObject(
+      gda_server_operation_get_node_info($!gso, $path_format, Str),
+      $raw,
+      |::('GDA::Server::Operation::Node').getTypePair
+    );
+  }
 
   method get_node_parent (Str() $path) is also<get-node-parent> {
     gda_server_operation_get_node_parent($!gso, $path);
@@ -146,7 +152,7 @@ class GDA::Server::Operation {
     GdaConnection()     $cnc,
     GdaServerProvider() $prov,
     Str()               $path_format
-  ) 
+  )
     is also<get-sql-identifier-at>
   {
     gda_server_operation_get_sql_identifier_at($!gso, $cnc, $prov, $path_format);
@@ -156,7 +162,7 @@ class GDA::Server::Operation {
     GdaConnection()     $cnc,
     GdaServerProvider() $prov,
     Str()               $path
-  ) 
+  )
     is also<get-sql-identifier-at-path>
   {
     gda_server_operation_get_sql_identifier_at_path($!gso, $cnc, $prov, $path);
@@ -166,7 +172,7 @@ class GDA::Server::Operation {
     propReturnObject(
       gda_server_operation_get_value_at($!gso, $path_format),
       $raw,
-      |GLib::Value.getTypePair
+      |GDA::Value.getTypePair
     );
   }
 
@@ -174,7 +180,7 @@ class GDA::Server::Operation {
     propReturnObject(
       gda_server_operation_get_value_at_path($!gso, $path),
       $raw,
-      |GLib::Value.getTypePair
+      |GDA::Value.getTypePair
     );
   }
 
@@ -188,7 +194,7 @@ class GDA::Server::Operation {
   method load_data_from_xml (
     anyNode()               $node,
     CArray[Pointer[GError]] $error = gerror
-  ) 
+  )
     is also<load-data-from-xml>
   {
     clear_error;
@@ -197,14 +203,22 @@ class GDA::Server::Operation {
     $rv;
   }
 
-  method op_type_to_string is also<op-type-to-string> {
-    gda_server_operation_op_type_to_string($!gso);
+  method op_type_to_string (
+    GDA::Server::Operation:U:
+
+    Int() $op
+  )
+    is also<op-type-to-string>
+  {
+    my GdaServerOperationType $o = $op;
+
+    gda_server_operation_op_type_to_string($o);
   }
 
   method perform_create_database (
     Str()                   $provider,
     CArray[Pointer[GError]] $error     = gerror
-  ) 
+  )
     is also<perform-create-database>
   {
     clear_error;
@@ -227,7 +241,7 @@ class GDA::Server::Operation {
   method perform_drop_database (
     Str()                   $provider,
     CArray[Pointer[GError]] $error     = gerror
-  ) 
+  )
     is also<perform-drop-database>
   {
     clear_error;
@@ -250,7 +264,7 @@ class GDA::Server::Operation {
   method prepare_create_database (
     Str()                   $db_name,
     CArray[Pointer[GError]] $error    = gerror
-  ) 
+  )
     is also<prepare-create-database>
   {
     clear_error;
@@ -266,7 +280,7 @@ class GDA::Server::Operation {
   method prepare_create_table (
     Str()                   $table_name,
     CArray[Pointer[GError]] $error       = gerror
-  ) 
+  )
     is also<prepare-create-table>
   {
     clear_error
@@ -282,7 +296,7 @@ class GDA::Server::Operation {
   method prepare_drop_database (
     Str()                   $db_name,
     CArray[Pointer[GError]] $error    = gerror
-  ) 
+  )
     is also<prepare-drop-database>
   {
     clear_error;
@@ -298,7 +312,7 @@ class GDA::Server::Operation {
   method prepare_drop_table (
     Str()                   $table_name,
     CArray[Pointer[GError]] $error        = gerror
-  ) 
+  )
     is also<prepare-drop-table>
   {
     clear_error;
@@ -314,7 +328,7 @@ class GDA::Server::Operation {
   method save_data_to_xml (
     CArray[Pointer[GError]]  $error = gerror,
                             :$raw   = False
-  ) 
+  )
     is also<save-data-to-xml>
   {
     clear_error;
@@ -323,7 +337,16 @@ class GDA::Server::Operation {
 
     return Nil unless $xn;
 
-    $raw ?? $xn !! LibXML::Node.box($xn);
+    role xmlNodeDumper {
+      method dump {
+        my $buffer = xmlBuffer32.new;
+        $buffer.NodeDump(xmlDoc, $xn, 0, 1);
+        $buffer.Content;
+      }
+    }
+
+    $raw ?? $xn
+         !! LibXML::Node.box($xn) but xmlNodeDumper
   }
 
   # cw: Varargs are out-of-scope unless a workaround is determined.
@@ -335,7 +358,7 @@ class GDA::Server::Operation {
     Str()                   $value,
     Str()                   $path,
     CArray[Pointer[GError]] $error  = gerror
-  ) 
+  )
     is also<set-value-at-path>
   {
     clear_error;
