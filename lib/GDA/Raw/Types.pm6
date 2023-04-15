@@ -16,6 +16,7 @@ need GLib::Raw::Object;
 need GLib::Raw::Structs;
 need GLib::Raw::Struct_Subs;
 need GLib::Raw::Subs;
+need GLib::Roles::Implementor;
 need GLib::Roles::Pointers;
 need GDA::Raw::Definitions;
 need GDA::Raw::Enums;

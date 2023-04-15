@@ -215,7 +215,7 @@ class GDA::Holder {
     );
   }
 
-  method bind is rw {
+  method bind-attr is rw {
     Proxy.new:
       FETCH => -> $     { self.get_bind    },
       STORE => -> $, \v { self.set_bind(v) }
