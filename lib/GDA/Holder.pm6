@@ -95,7 +95,7 @@ class GDA::Holder {
   }
 
   # Type: GdaHolder
-  method full-bind ( :$raw = False is rw  {
+  method full-bind ( :$raw = False ) is rw  {
     my $gv = GLib::Value.new( self.get_type );
     Proxy.new(
       FETCH => sub ($) {
