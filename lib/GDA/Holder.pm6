@@ -58,8 +58,9 @@ class GDA::Holder {
     $o;
   }
   multi method new (Int() $gtype, :$type is required) {
-    my GType $t          = $gtype;
-    my       $gda-holder = gda_holder_new($t);
+    my GType $t = $gtype;
+
+    my $gda-holder = gda_holder_new($t);
 
     $gda-holder ?? self.bless( :$gda-holder ) !! Nil;
   }
@@ -94,17 +95,21 @@ class GDA::Holder {
   }
 
   # Type: GdaHolder
-  method full-bind is rw  {
-    my $gv = GLib::Value.new( GdaHolder );
+  method full-bind ( :$raw = False is rw  {
+    my $gv = GLib::Value.new( self.get_type );
     Proxy.new(
       FETCH => sub ($) {
         $gv = GLib::Value.new(
           self.prop_get('full-bind', $gv)
         );
-        $gv.GdaHolder;
+        propReturnObject(
+          $gv.object,
+          $raw,
+          |self.getTypePair
+        );
       },
-      STORE => -> $,  $val is copy {
-        $gv.GdaHolder = $val;
+      STORE => -> $, GdaHolder() $val is copy {
+        $gv.object = $val;
         self.prop_set('full-bind', $gv);
       }
     );
@@ -162,7 +167,7 @@ class GDA::Holder {
 
   # Type: GdaHolder
   method simple-bind ( :$raw = False ) is rw  {
-    my $gv = GLib::Value.new( GDA::Holder.get_type );
+    my $gv = GLib::Value.new( self.get_type );
     Proxy.new(
       FETCH => sub ($) {
         $gv = GLib::Value.new(
@@ -171,7 +176,7 @@ class GDA::Holder {
         propReturnObject(
           $gv.object,
           $raw,
-          |GDA::Holder.getTypePair
+          |self.getTypePair
         );
       },
       STORE => -> $, GdaHolder() $val is copy {
@@ -393,13 +398,13 @@ class GDA::Holder {
   }
 
   method set_attribute (
-    Str()          $attribute,
-    GValue()       $value,
-    GDestroyNotify $destroy    = gpointer
+    Str()    $attribute,
+    GValue() $value,
+             &destroy    = %DEFAULT-CALLBACKS<GDestroyNotify>
   )
     is also<set-attribute>
   {
-    gda_holder_set_attribute($!gh, $attribute, $value, $destroy);
+    gda_holder_set_attribute($!gh, $attribute, $value, &destroy);
   }
 
   method set_attribute_static (
