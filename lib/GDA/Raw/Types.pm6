@@ -5,7 +5,7 @@ use CompUnit::Util :re-export;
 use GLib::Raw::Exports;
 use GDA::Raw::Exports;
 
-my constant forced = 0;
+my constant forced = 3;
 
 unit package GDA::Raw::Types;
 

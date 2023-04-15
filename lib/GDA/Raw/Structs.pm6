@@ -378,7 +378,10 @@ class GdaHolder is repr<CStruct> is export {
 	has gpointer  $!priv  ;
 }
 
-class GdaLdapAttribute is repr<CStruct> is export {
+class GdaLdapAttribute is repr<CStruct> 
+  is   export 
+  does StructSkipsTest['removed from lib?'] 
+{
   has Str                     $!attr_name;
   has guint                   $.nb_values  is rw;
   has CArray[Pointer[GValue]] $!values;
@@ -390,7 +393,10 @@ class GdaLdapAttribute is repr<CStruct> is export {
   }
 }
 
-class GdaLdapEntry is repr<CStruct> is export {
+class GdaLdapEntry is repr<CStruct> 
+  is   export 
+  does StructSkipsTest['removed from lib?']
+{
   has Str                               $!dn;
   has guint                             $.nb_attributes;
   has CArray[Pointer[GdaLdapAttribute]] $!attributes;
@@ -1289,7 +1295,11 @@ class GdaTreeMgrLabel is repr<CStruct> is export {
 	has gpointer            $!priv  ;
 }
 
-class GdaTreeMgrLdap is repr<CStruct> is export {
+class GdaTreeMgrLdap 
+  is   repr<CStruct> 
+  is   export 
+  does StructSkipsTest['removed from lib?']
+{
   HAS GdaTreeManager      $!object;
 	has gpointer            $!priv  ;
 }

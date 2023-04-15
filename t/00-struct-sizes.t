@@ -29,7 +29,7 @@ my @classes =
            .sort;
 @classes.push: (%config<extra-test-classes> // '').split(',');
 
-plan 99;
+plan 103;
 
 for @classes {
   sub sizeof () returns int64 { ... }
