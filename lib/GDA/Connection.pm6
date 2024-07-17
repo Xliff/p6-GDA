@@ -52,6 +52,7 @@ class GDA::Connection {
   }
 
   method GDA::Raw::Definitions::GdaConnection
+    is also<GdaConnection>
   { $!gc }
 
   multi method new (GdaConnectionAncestry $gda-connection, :$ref = True) {
