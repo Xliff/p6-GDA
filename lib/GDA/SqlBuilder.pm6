@@ -1,6 +1,7 @@
 use v6.c;
 
 use Method::Also;
+use NativeCall;
 
 use GDA::Raw::Types;
 use GDA::Raw::SqlBuilder;
@@ -12,7 +13,7 @@ our subset GdaSqlBuilderAncestry is export of Mu
   where GdaSqlBuilder | GObject;
 
 class GDA::SqlBuilder {
-  also does GLib::Roles::Objects;
+  also does GLib::Roles::Object;
 
   has GdaSqlBuilder $!gsb is implementor;
 
@@ -53,8 +54,22 @@ class GDA::SqlBuilder {
     $o;
   }
 
-  multi method new {
-    my $gda-sql-bldr = gda_sql_builder_new();
+  multi method new ( :c(:$create)  is required ) {
+    samewith(GDA_SQL_STATEMENT_INSERT);
+  }
+  multi method new ( :r(:s(:$select))  is required ) {
+    samewith(GDA_SQL_STATEMENT_SELECT);
+  }
+  multi method new ( :u(:$update)  is required ) {
+    samewith(GDA_SQL_STATEMENT_UPDATE);
+  }
+  multi method new ( :d(:$deleted) is required ) {
+    samewith(GDA_SQL_STATEMENT_DELETE);
+  }
+  multi method new (Int() $stmt_type) {
+    my GdaSqlStatementType $s = $stmt_type;
+
+    my $gda-sql-bldr = gda_sql_builder_new($s);
 
     $gda-sql-bldr ?? self.bless( :$gda-sql-bldr ) !! Nil;
   }
@@ -70,7 +85,7 @@ class GDA::SqlBuilder {
     my $gv = GLib::Value.new( G_TYPE_UINT );
     Proxy.new(
       FETCH => sub ($) {
-        $gv = self.prop_get('stmt-type', $gv)
+        $gv = self.prop_get('stmt-type', $gv);
         $gv.int;
       },
       STORE => -> $, Int() $val is copy {
@@ -201,7 +216,7 @@ class GDA::SqlBuilder {
     CArray[GdaSqlBuilderId] $args,
     Int()                   $args_size
   ) {
-    my gint $s = $args_size
+    my gint $s = $args_size;
 
     gda_sql_builder_add_function_v($!gsb, $func_name, $args, $s);
   }
@@ -294,6 +309,33 @@ class GDA::SqlBuilder {
 
 class GDA::SqlBuilder::Select is GDA::SqlBuilder {
 
+  method new {
+    my $o = self.new( :select );
+    return Nil unless $o;
+  }
+
+  method build (
+    :$distinct,
+    :@fields,
+    :table(:$target),
+    :$where,
+    :$limit,
+    :order_by(:$order-by),
+    :group_by(:$group-by),
+    :$having
+  ) {
+    self.set_distinct($distinct)   if   $distinct;
+    self.add_target($target)       if   $target;
+    self.set_limit($_)             with $limit;
+    self.order_by($order-by)       if   $order-by;
+    self.group_by($group-by)       if   $group-by;
+    self.set-having($having)       if   $having;
+
+    if +@fields {
+      self.add_field($_) for @fields
+    }
+  }
+
   method add_field (
     Str() $field_name,
     Str() $table_name,
@@ -301,23 +343,28 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
   )
     is also<add-field>
   {
-    gda_sql_builder_select_add_field($!gsb, $field_name, $table_name, $alias);
+    gda_sql_builder_select_add_field(
+      self.GdaSqlBuilder,
+      $field_name,
+      $table_name,
+      $alias
+    );
   }
 
   method add_target (Str() $table_name, Str() $alias) is also<add-target> {
-    gda_sql_builder_select_add_target($!gsb, $table_name, $alias);
+    gda_sql_builder_select_add_target(self.GdaSqlBuilder, $table_name, $alias);
   }
 
   method add_target_id (Int() $table_id, Str() $alias) is also<add-target-id> {
     my  GdaSqlBuilderId $t = $table_id;
 
-    gda_sql_builder_select_add_target_id($!gsb, $t, $alias);
+    gda_sql_builder_select_add_target_id(self.GdaSqlBuilder, $t, $alias);
   }
 
   method group_by (Int() $expr_id) is also<group-by> {
     my GdaSqlBuilderId $e = $expr_id;
 
-    gda_sql_builder_select_group_by($!gsb, $e);
+    gda_sql_builder_select_group_by(self.GdaSqlBuilder, $e);
   }
 
   method join_targets (
@@ -333,27 +380,34 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
 
     my GdaSqlSelectJoinType  $j = $join_type;
 
-    gda_sql_builder_select_join_targets($!gsb, $l, $r, $j, $e);
+    gda_sql_builder_select_join_targets(self.GdaSqlBuilder, $l, $r, $j, $e);
   }
 
-  method order_by (Int() $expr_id, Int() $asc, Str() $collation_name) is also<order-by> {
+  method order_by (Int() $expr_id, Int() $asc, Str() $collation_name)
+    is also<order-by>
+  {
     my GdaSqlBuilderId $e = $expr_id;
     my gboolean        $a = $asc.so.Int;
 
-    gda_sql_builder_select_order_by($!gsb, $, $a, $c);
+    gda_sql_builder_select_order_by(
+      self.GdaSqlBuilder,
+      $e,
+      $a,
+      $collation_name
+    );
   }
 
   method set_distinct (Int() $distinct, Int() $expr_id) is also<set-distinct> {
     my GdaSqlBuilderId $e = $expr_id;
     my gboolean        $d = $distinct.so.Int;
 
-    gda_sql_builder_select_set_distinct($!gsb, $d, $e);
+    gda_sql_builder_select_set_distinct(self.GdaSqlBuilder, $d, $e);
   }
 
   method set_having (Int() $cond_id) is also<set-having> {
     my GdaSqlBuilderId $c = $cond_id;
 
-    gda_sql_builder_select_set_having($!gsb, $c);
+    gda_sql_builder_select_set_having(self.GdaSqlBuilder, $c);
   }
 
   method set_limit (
@@ -366,10 +420,12 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
       ($limit_count_expr_id, $limit_offset_expr_id);
 
     gda_sql_builder_select_set_limit(
-      $!gsb,
+      self.GdaSqlBuilder,
       $limit_count_expr_id,
       $limit_offset_expr_id
     );
   }
 
 }
+
+constant SQLS is export := GDA::SqlBuilder::Select
