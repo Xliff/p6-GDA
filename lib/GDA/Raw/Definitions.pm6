@@ -15,6 +15,7 @@ constant gda-report  is export = 'gda-report-5.0',v4;
 constant gda-virtual is export = 'gda-virtual-5.0',v4;
 constant gda-xslt    is export = 'gda-xslt-5.0',v4;
 
+class GdaAttributesManager    is repr<CPointer> does GLib::Roles::Pointers is export { }
 class GdaDataModel            is repr<CPointer> does GLib::Roles::Pointers is export { }
 class GdaDataHandler          is repr<CPointer> does GLib::Roles::Pointers is export { }
 class GdaLdapConnection       is repr<CPointer> does GLib::Roles::Pointers is export { }
@@ -45,10 +46,10 @@ sub rfc1738-encode ($e) is export {
   gda_rfc1738_encode($e);
 }
 
-multi sub rfc1738-decode (Str $a, :$encoding = 'utf9') {
-  my $ca = CArray[uint8].new( $a.encode($encoding) );
+multi sub rfc1738-decode (Str $a, :$encoding = 'utf8') {
+  my $ca = CArray[uint8].new( |$a.encode($encoding), 0 );
   samewith($ca);
-  Buf.new($ca).encode($encoding);
+  Buf.new($ca).decode($encoding);
 }
 
 multi sub rfc1738-decode (CArray[uint8] $d) is export {
