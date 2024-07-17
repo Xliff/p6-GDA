@@ -6,6 +6,8 @@ use NativeCall;
 use GDA::Raw::Types;
 use GDA::Raw::SqlBuilder;
 
+use GDA::Statement;
+
 use GLib::Roles::Object;
 use GLib::Roles::Implementor;
 
@@ -172,25 +174,35 @@ class GDA::SqlBuilder {
     gda_sql_builder_add_expr($!gsb, $dh, $t);
   }
 
-  method add_expr_value (GdaDataHandler() $dh, GValue() $value) is also<add-expr-value> {
+  method add_expr_value (GdaDataHandler() $dh, GValue() $value)
+    is also<add-expr-value>
+  {
     gda_sql_builder_add_expr_value($!gsb, $dh, $value);
   }
 
-  method add_field_id (Str() $field_name, Str() $table_name) is also<add-field-id> {
+  method add_field_id (Str() $field_name, Str() $table_name = Str)
+    is also<add-field-id>
+  {
     gda_sql_builder_add_field_id($!gsb, $field_name, $table_name);
   }
 
-  method add_field_value (Str() $field_name, Int() $type) is also<add-field-value> {
+  method add_field_value (Str() $field_name, Int() $type)
+    is also<add-field-value>
+  {
     my GType $t = $type;
 
     gda_sql_builder_add_field_value($!gsb, $field_name, $t);
   }
 
-  method add_field_value_as_gvalue (Str() $field_name, GValue() $value) is also<add-field-value-as-gvalue> {
+  method add_field_value_as_gvalue (Str() $field_name, GValue() $value)
+    is also<add-field-value-as-gvalue>
+  {
     gda_sql_builder_add_field_value_as_gvalue($!gsb, $field_name, $value);
   }
 
-  method add_field_value_id (Int() $field_id, Int() $value_id) is also<add-field-value-id> {
+  method add_field_value_id (Int() $field_id, Int() $value_id)
+    is also<add-field-value-id>
+  {
     my GdaSqlBuilderId ($f, $v) = ($field_id, $value_id);
 
     gda_sql_builder_add_field_value_id($!gsb, $f, $v);
@@ -225,7 +237,9 @@ class GDA::SqlBuilder {
     gda_sql_builder_add_id($!gsb, $str);
   }
 
-  method add_param (Str() $param_name, Int() $type, Int() $nullok) is also<add-param> {
+  method add_param (Str() $param_name, Int() $type, Int() $nullok)
+    is also<add-param>
+  {
     my GType    $t = $type;
     my gboolean $n = $nullok.so.Int;
 
@@ -236,15 +250,21 @@ class GDA::SqlBuilder {
     gda_sql_builder_add_sub_select($!gsb, $sqlst);
   }
 
-  method compound_add_sub_select (GdaSqlStatement() $sqlst) is also<compound-add-sub-select> {
+  method compound_add_sub_select (GdaSqlStatement() $sqlst)
+    is also<compound-add-sub-select>
+  {
     gda_sql_builder_compound_add_sub_select($!gsb, $sqlst);
   }
 
-  method compound_add_sub_select_from_builder (GdaSqlBuilder() $subselect) is also<compound-add-sub-select-from-builder> {
+  method compound_add_sub_select_from_builder (GdaSqlBuilder() $subselect)
+    is also<compound-add-sub-select-from-builder>
+  {
     gda_sql_builder_compound_add_sub_select_from_builder($!gsb, $subselect);
   }
 
-  method compound_set_type (Int() $compound_type) is also<compound-set-type> {
+  method compound_set_type (Int() $compound_type)
+    is also<compound-set-type>
+  {
     my GdaSqlStatementCompoundType $c = $compound_type;
 
     gda_sql_builder_compound_set_type($!gsb, $c);
@@ -264,7 +284,11 @@ class GDA::SqlBuilder {
     gda_sql_builder_get_sql_statement($!gsb);
   }
 
-  method get_statement (CArray[Pointer[GError]] $error = gerror) is also<get-statement> {
+  method get_statement (CArray[Pointer[GError]] $error = gerror)
+    is also<get-statement>
+  {
+    say "Get Statement: { $!gsb }";
+
     gda_sql_builder_get_statement($!gsb, $error);
   }
 
@@ -289,7 +313,9 @@ class GDA::SqlBuilder {
     gda_sql_builder_import_expression_from_builder($!gsb, $query, $e);
   }
 
-  method join_add_field (Int() $join_id, Str() $field_name) is also<join-add-field> {
+  method join_add_field (Int() $join_id, Str() $field_name)
+    is also<join-add-field>
+  {
     my GdaSqlBuilderId $j = $join_id;
 
     gda_sql_builder_join_add_field($!gsb, $j, $field_name);
@@ -298,6 +324,7 @@ class GDA::SqlBuilder {
   method set_table (Str() $table_name) is also<set-table> {
     gda_sql_builder_set_table($!gsb, $table_name);
   }
+
 
   method set_where (Int() $cond_id) is also<set-where> {
     my GdaSqlBuilderId $c = $cond_id;
@@ -308,10 +335,12 @@ class GDA::SqlBuilder {
 }
 
 class GDA::SqlBuilder::Select is GDA::SqlBuilder {
+  has $!o handles(*) is built;
 
   method new {
-    my $o = self.new( :select );
+    my $o = callwith( :select );
     return Nil unless $o;
+    self.bless( :$o );
   }
 
   method build (
@@ -338,33 +367,56 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
 
   method add_field (
     Str() $field_name,
-    Str() $table_name,
-    Str() $alias
+
+    Str() $table_name  = Str,
+    Str() $alias       = Str
   )
     is also<add-field>
   {
-    gda_sql_builder_select_add_field(
-      self.GdaSqlBuilder,
+    my $id = gda_sql_builder_select_add_field(
+      $!o.GdaSqlBuilder,
       $field_name,
       $table_name,
       $alias
     );
+    say "Field: { $id }";
+    $id;
   }
 
-  method add_target (Str() $table_name, Str() $alias) is also<add-target> {
-    gda_sql_builder_select_add_target(self.GdaSqlBuilder, $table_name, $alias);
+  method add_target (Str() $table_name, Str() $alias = Str)
+    is also<add-target>
+  {
+    my $id = gda_sql_builder_select_add_target(
+      $!o.GdaSqlBuilder,
+      $table_name,
+      $alias
+    );
+    say "Target: { $id }";
+    $id;
   }
 
-  method add_target_id (Int() $table_id, Str() $alias) is also<add-target-id> {
+  method add_target_id (Int() $table_id, Str() $alias = Str)
+    is also<add-target-id>
+  {
     my  GdaSqlBuilderId $t = $table_id;
 
-    gda_sql_builder_select_add_target_id(self.GdaSqlBuilder, $t, $alias);
+    gda_sql_builder_select_add_target_id($!o.GdaSqlBuilder, $t, $alias);
+  }
+
+  method get_sql_statement is also<get-sql-statement> {
+    say "O: { $!o.GdaSqlBuilder }";
+
+    $!o.get_sql_statement;
+  }
+
+  method get_statement ( :$raw = False ) is also<get-statement> {
+    propReturnObject($!o.get_statement, $raw, |GDA::Statement.getTypePair);
   }
 
   method group_by (Int() $expr_id) is also<group-by> {
     my GdaSqlBuilderId $e = $expr_id;
 
-    gda_sql_builder_select_group_by(self.GdaSqlBuilder, $e);
+    gda_sql_builder_select_group_by($!o.GdaSqlBuilder, $e);
   }
 
   method join_targets (
@@ -380,7 +432,7 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
 
     my GdaSqlSelectJoinType  $j = $join_type;
 
-    gda_sql_builder_select_join_targets(self.GdaSqlBuilder, $l, $r, $j, $e);
+    gda_sql_builder_select_join_targets($!o.GdaSqlBuilder, $l, $r, $j, $e);
   }
 
   method order_by (Int() $expr_id, Int() $asc, Str() $collation_name)
@@ -390,7 +442,7 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
     my gboolean        $a = $asc.so.Int;
 
     gda_sql_builder_select_order_by(
-      self.GdaSqlBuilder,
+      $!o.GdaSqlBuilder,
       $e,
       $a,
       $collation_name
@@ -401,13 +453,13 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
     my GdaSqlBuilderId $e = $expr_id;
     my gboolean        $d = $distinct.so.Int;
 
-    gda_sql_builder_select_set_distinct(self.GdaSqlBuilder, $d, $e);
+    gda_sql_builder_select_set_distinct($!o.GdaSqlBuilder, $d, $e);
   }
 
   method set_having (Int() $cond_id) is also<set-having> {
     my GdaSqlBuilderId $c = $cond_id;
 
-    gda_sql_builder_select_set_having(self.GdaSqlBuilder, $c);
+    gda_sql_builder_select_set_having($!o.GdaSqlBuilder, $c);
   }
 
   method set_limit (
@@ -420,7 +472,7 @@ class GDA::SqlBuilder::Select is GDA::SqlBuilder {
       ($limit_count_expr_id, $limit_offset_expr_id);
 
     gda_sql_builder_select_set_limit(
-      self.GdaSqlBuilder,
+      $!o.GdaSqlBuilder,
       $limit_count_expr_id,
       $limit_offset_expr_id
     );
