@@ -15,6 +15,8 @@ constant gda-report  is export = 'gda-report-5.0',v4;
 constant gda-virtual is export = 'gda-virtual-5.0',v4;
 constant gda-xslt    is export = 'gda-xslt-5.0',v4;
 
+constant GdaSqlBuilderId is export := guint;
+
 class GdaAttributesManager    is repr<CPointer> does GLib::Roles::Pointers is export { }
 class GdaDataModel            is repr<CPointer> does GLib::Roles::Pointers is export { }
 class GdaDataHandler          is repr<CPointer> does GLib::Roles::Pointers is export { }
