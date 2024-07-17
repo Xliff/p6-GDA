@@ -9,6 +9,7 @@ my constant forced = 3;
 
 unit package GDA::Raw::Types;
 
+need GLib::Raw::Debug;
 need GLib::Raw::Definitions;
 need GLib::Raw::Enums;
 need GLib::Raw::Exceptions;
