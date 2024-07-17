@@ -30,6 +30,8 @@ say '-- postGS';
 @returned-holders.gist.say;
 .id.say for @returned-holders;
 
+# Should print 12.
 my $set = GDA::Set.new($gslist);
-$set.gist.say;
-$set.get-holder-value('an int').value.say;
+my $v = $set.get-holder-value('an int');
+$v.value.say;
+$v.type.say;
