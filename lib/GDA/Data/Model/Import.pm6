@@ -85,7 +85,9 @@ class GDA::Data::Model::Import {
     Int()    $random_access,
     GdaSet() $options
   ) {
-    samewith( cast(Pointer, $data), $random_access, $options );
+    samewith(
+      BufToStrArray($data), $random_access, $options
+    );
   }
   multi method new_mem (
     CArray[uint8] $data,
